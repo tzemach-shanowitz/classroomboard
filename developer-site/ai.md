@@ -1,6 +1,6 @@
 # ClassroomBoard: instructions for AI agents
 
-Updated 2026-11-26 03:03 UTC. Current version: v101. Live app: https://classroomboard.web.app/app/ . Public site: https://classroomboard.web.app/
+Updated 2026-11-26 03:31 UTC. Current version: v102. Live app: https://classroomboard.web.app/app/ . Public site: https://classroomboard.web.app/
 
 ## What it is
 ClassroomBoard is a free classroom screen for teachers: clock, timer, whiteboard, name picker, traffic light, sound level, text, schedule, behavior and stars, and more. It runs in any browser, works on a SMART Board or projector, and needs no account. Signing in saves and syncs the classroom.

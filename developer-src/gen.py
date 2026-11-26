@@ -4,9 +4,10 @@ os.makedirs(OUT,exist_ok=True)
 REPO='https://github.com/tzemach-shanowitz/classroomboard'
 SITE='https://classroomboard.web.app'
 NOW=datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-VERSION='v101'
+VERSION='v102'
 mission="Make ClassroomBoard exceptionally simple, beautiful, immediately understandable, useful to as many teachers as possible, accessible, reliable and trustworthy, easy to personalize, and easy to share."
 releases=[
+ ("v102","2026-11-25","Make it yours, first slice, new users only: one optional first-visit card (Make it mine or Just start teaching), then classroom name shown on the board, a view from six photos, and the activities you do most, which put those tools in the toolbar. Skippable, no sign-in, saved on this computer. Classroom name can be edited in Settings > Classroom. Legacy account unchanged."),
  ("v101","2026-11-25","Phone toolbar fits all 8 tools without labels under 600px and the corner gear stays on phones. Landing: account link is added by script only when signed in (crawlers saw both Open classroom and Try for free), no script error, one Try for free wording, Supplies and Behavior removed from the page. Date under the clock more legible. Name picker no longer opens over the timer. Settings > Privacy has Clear this device for signed-out users. Plain build number in the landing HTML."),
  ("v100","2026-11-25","New users: toolbar visible with labels, one settings gear, photos only in the daily background, Name picker wording, Sign in wording everywhere, clearer guest privacy text. Landing page two sections shorter."),
  ("v99","2026-11-25","Clock and date: date centered under the clock as one unit, smaller and softer, same edge spacing, sizes follow the screen. Timer fills its widget on phones and scales on large screens. Version number shown on the landing page footer and the hub."),

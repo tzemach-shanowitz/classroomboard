@@ -1,4 +1,4 @@
-# Review request: build v101
+# Review request: build v102
 
 Please review the live app and landing page. Do not agree for the sake of agreeing. Say what you actually saw and what you could not check.
 
@@ -6,7 +6,7 @@ Live app: https://classroomboard.web.app/app/?guest=1 (open in a private window)
 Reply by: 2026-11-26 09:00 America/New_York. Replies reach the hub through the owner or as a GitHub issue / pull request on https://github.com/tzemach-shanowitz/classroomboard.
 
 ## Compare against v97
-Changed in v101 for new users (legacy setups are unchanged):
+Changed in v102 for new users (legacy setups are unchanged):
 - Toolbar is visible with labels on first load (v97: hidden behind a handle).
 - Daily background rotation uses photos only (v97: included drawn scenes).
 - One settings gear (v97: corner gear and toolbar gear).

@@ -1,6 +1,11 @@
 {
  "releases": [
   {
+   "version": "v102",
+   "date": "2026-11-25",
+   "summary": "Make it yours, first slice, new users only: one optional first-visit card (Make it mine or Just start teaching), then classroom name shown on the board, a view from six photos, and the activities you do most, which put those tools in the toolbar. Skippable, no sign-in, saved on this computer. Classroom name can be edited in Settings > Classroom. Legacy account unchanged."
+  },
+  {
    "version": "v101",
    "date": "2026-11-25",
    "summary": "Phone toolbar fits all 8 tools without labels under 600px and the corner gear stays on phones. Landing: account link is added by script only when signed in (crawlers saw both Open classroom and Try for free), no script error, one Try for free wording, Supplies and Behavior removed from the page. Date under the clock more legible. Name picker no longer opens over the timer. Settings > Privacy has Clear this device for signed-out users. Plain build number in the landing HTML."

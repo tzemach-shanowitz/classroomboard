@@ -489,7 +489,7 @@ const CATS=[
    Group('Adjust',Row('Brightness',Slider(b.brightness,.4,1.4,.05,v=>{b.brightness=v;u()}),{k:'bright'}),Row('Blur',Slider(b.blur,0,20,1,v=>{b.blur=v;u()})),Row('Dimming',Slider(b.dim,0,.8,.02,v=>{b.dim=v;u()}))))}},
  {id:'classroom',name:'Classroom',icon:'classroom',render:(pg,ctx)=>{
   pg.append(Group('People',Nav('Class lists and students',()=>ctx.push(SUBS.students.title,SUBS.students.fn),{k:'students',val:lists().reduce((a,l)=>a+l.students.length,0)+' names'})),
-   Group('Daily setup',Nav('Daily schedule',()=>{schedDate=dayKey();ctx.push(SUBS.sched.title,SUBS.sched.fn)},{k:'schedule',desc:'Edit today or any other day.'}),
+   Group('Daily setup',...(window.__legacy?[]:[Row('Classroom name',Text((cfg.room&&cfg.room.name)||'',v=>{cfg.room=cfg.room||{};cfg.room.name=v.trim();saveCfg();window.renderRoomName&&renderRoomName()},{ph:'For example: Room 14'}),{desc:'Shown on your board.'})]),Nav('Daily schedule',()=>{schedDate=dayKey();ctx.push(SUBS.sched.title,SUBS.sched.fn)},{k:'schedule',desc:'Edit today or any other day.'}),
     Nav('Supplies',()=>ctx.push(SUBS.supplies.title,SUBS.supplies.fn),{k:'supplies'}),
     Nav('Name picker',()=>ctx.push(SUBS.picker.title,SUBS.picker.fn),{k:'picker'}),
     Nav('Behavior and stars',()=>ctx.push(SUBS.behavior.title,SUBS.behavior.fn),{k:'behavior'})))}},

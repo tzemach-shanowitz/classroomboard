@@ -1,8 +1,8 @@
 {
  "project": "ClassroomBoard",
  "site": "https://classroomboard.web.app",
- "current_version": "v101",
- "updated": "2026-11-26 03:03 UTC",
+ "current_version": "v102",
+ "updated": "2026-11-26 03:31 UTC",
  "mission": "Make ClassroomBoard exceptionally simple, beautiful, immediately understandable, useful to as many teachers as possible, accessible, reliable and trustworthy, easy to personalize, and easy to share.",
  "priorities": [
   "Run an independent review as an unfamiliar teacher on a phone and a touchscreen",
