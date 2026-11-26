@@ -514,6 +514,7 @@ const CATS=[
   pg.append(Group(null,Nav('Account and sync',()=>ctx.push(SUBS.account.title,SUBS.account.fn),{k:'account',desc:'Sign in, sign out, Google Drive, sync status.'}),Nav('Share ClassroomBoard',()=>ctx.push(SUBS.share.title,SUBS.share.fn),{k:'share'})))}},
  {id:'privacy',name:'Privacy & data',icon:'privacy',render:(pg,ctx)=>{
   pg.append(Group(null,Nav('Backup, restore and reset',()=>ctx.push(SUBS.data.title,SUBS.data.fn),{k:'backup',desc:'Download or restore a copy of everything.'})),
+   ...((window.Cloud&&window.Cloud.user)?[]:[Group('Shared computer',Row('Clear this device',Btn('Clear',()=>sure('Remove everything ClassroomBoard saved in this browser (class lists, settings, schedule)? Without an account it cannot be brought back.',async()=>{await window.Cloud.signOut(true)}),'dg'),{desc:'Removes what this browser saved. Use it on a computer that is not yours.'}))]),
    Group('Sensitive access',Row('Microphone',null,{val:'Asked only when a widget opens',desc:'Sound level only. Nothing is recorded or sent.'}),Row('Camera',null,{val:'Asked only when Webcam opens',desc:'Stopped when the widget closes.'})),
    Note('Signed in: your class lists are saved in your account. Without an account they stay only in this browser (Settings, Account, Clear this device removes them). Demo screens use made-up names.'))}},
  {id:'advanced',name:'Advanced',icon:'advanced',render:(pg,ctx)=>{

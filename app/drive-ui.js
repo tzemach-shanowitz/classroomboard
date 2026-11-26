@@ -187,7 +187,7 @@ S.share=function(P){const url='https://classroomboard.web.app';
 /* ---- discreet guest note (signed-out, new users only, dismissible) ---- */
 (function(){if(window.__demo||window.__legacy)return;
  addEventListener('load',()=>setTimeout(()=>{const C=window.Cloud;if(C&&C.user)return;if(sessionStorage.getItem('scGuestHide')||new URLSearchParams(location.search).get('view')==='board')return;
-  const p=document.createElement('div');p.id='guestpill';p.innerHTML='<span>Guest · work is saved only in this browser.</span> <a href="#">Log in to save</a> <b title="Hide">×</b>';
+  const p=document.createElement('div');p.id='guestpill';p.innerHTML='<span>Guest · work is saved only in this browser.</span> <a href="#">Sign in to save</a> <b title="Hide">×</b>';
   document.body.append(p);p.querySelector('a').onclick=e=>{e.preventDefault();try{window.__sc.openSettings('account')}catch(x){}};
   p.querySelector('b').onclick=()=>{sessionStorage.setItem('scGuestHide','1');p.remove()};
   const iv=setInterval(()=>{if(window.Cloud&&window.Cloud.user){p.remove();clearInterval(iv)}},2000)},4000));

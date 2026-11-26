@@ -87,7 +87,7 @@ function renderClock(){
   c.style.display=k.visible?'':'none';c.style.opacity=k.opacity;c.style.color=k.color||'';
   c.style.top=k.pos[0]==='t'?'var(--edge)':'auto';c.style.bottom=k.pos[0]==='b'?'var(--edge)':'auto';
   c.style.right=k.pos[1]==='r'?'var(--edge)':'auto';c.style.left=k.pos[1]==='l'?'var(--edge)':'auto';
-  const t=$('#clk-time');{const u=(k.style==='words'?k.size*.8:k.size);t.style.fontSize='calc(min(1vh,1.5vw)*'+u+')';$('#clk-heb').style.fontSize='calc(min(1vh,1.5vw)*'+(u*.34).toFixed(2)+')'}t.style.fontFamily=k.font;
+  const t=$('#clk-time');{const u=(k.style==='words'?k.size*.8:k.size);t.style.fontSize='calc(min(1vh,1.5vw)*'+u+')';$('#clk-heb').style.fontSize='calc(min(1vh,1.5vw)*'+(u*.4).toFixed(2)+')'}t.style.fontFamily=k.font;
   t.textContent=timeStr(now);
   {const dm=k.date||'heb';let tx='';try{const std=now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});tx=dm==='std'?std:dm==='both'?std+' · '+hebrewDate(now):dm==='none'?'':hebrewDate(now)}catch(e){tx=hebrewDate(now)}$('#clk-heb').textContent=tx}
 }
@@ -377,7 +377,7 @@ const lists=()=>Store.get('studentLists',[{id:'main',name:'Class',students:[]}])
 const activeList=()=>{const L=lists();return L.find(l=>l.id===Store.get('activeList','main'))||L[0]};
 function namesFrom(inst){if(inst.local)return inst.local.filter(Boolean);return activeList().students.filter(x=>!x.absent).map(x=>x.name)}
 function openPicker(){if(Widgets.open.picker){Widgets.raise('picker');return}
-  const inst=Widgets.create('picker',cfg.labels.picker,{x:Math.max(20,innerWidth/2-280),y:150,w:560,settings:pickerSettings});inst.el.classList.add('light');
+  const inst=Widgets.create('picker',cfg.labels.picker,{x:Math.max(20,innerWidth/2-280-Math.min(120,innerWidth*.06)),y:130,w:560,settings:pickerSettings});inst.el.classList.add('light');
   const body=inst.body;body.style.direction='ltr';
   const blip=()=>{if(!cfg.picker.sound)return;Audio_.unlock();const c=Audio_.ctx;if(!c)return;const o=c.createOscillator(),g=c.createGain();o.frequency.value=988;g.gain.setValueAtTime(.2,c.currentTime);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.6);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.65)};
   const names=()=>activeList().students.filter(x=>!x.absent).map(x=>x.name);

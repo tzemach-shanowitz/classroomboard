@@ -1,5 +1,8 @@
 # Release history
 
+## v101 (2026-11-25)
+Phone toolbar fits all 8 tools without labels under 600px and the corner gear stays on phones. Landing: account link is added by script only when signed in (crawlers saw both Open classroom and Try for free), no script error, one Try for free wording, Supplies and Behavior removed from the page. Date under the clock more legible. Name picker no longer opens over the timer. Settings > Privacy has Clear this device for signed-out users. Plain build number in the landing HTML.
+
 ## v100 (2026-11-25)
 New users: toolbar visible with labels, one settings gear, photos only in the daily background, Name picker wording, Sign in wording everywhere, clearer guest privacy text. Landing page two sections shorter.
 

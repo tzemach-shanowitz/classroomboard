@@ -10,3 +10,4 @@ Two of three council votes carry a recommendation to the owner. The owner makes 
 | 2026-11-25 | Give Claude direct GitHub push access | n/a | n/a | n/a | Owner-decided (his messages: "Yes to GitHub", "Direct"). Scope: Claude's own branches only, never main; merge after review. |
 | 2026-11-25 | Show the build number on the landing page, hub and review manifest | advised (second review) | not received | agree | Done in v99 |
 | 2026-11-25 | Show the toolbar with labels on first load for new users | not asked | proposed (relayed) | Approve | Done in v100 for new users; legacy unchanged |
+| 2026-11-25 | Toolbar visible with labels on first load (v100 re-review) | Approve with modifications (relayed 10:01 PM: compact, no duplicate settings button, one More button) | Approve with modifications (relayed 10:01 PM: labels push Settings off phones) | Approve with modifications | Phone fix in v101: no labels under 600px, gear kept. Owner decides |

@@ -1,6 +1,6 @@
 # ClassroomBoard project knowledge base
 
-Updated 2026-11-26 02:57 UTC. Version v100. Source: https://github.com/tzemach-shanowitz/classroomboard
+Updated 2026-11-26 03:03 UTC. Version v101. Source: https://github.com/tzemach-shanowitz/classroomboard
 
 ## Vision
 A universal classroom application that any teacher can use in seconds, and that its founder can personalize completely for his own classroom. The default experience is neutral and calm. Personalization is optional and discovered gradually.
