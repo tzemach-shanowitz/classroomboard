@@ -1,5 +1,6 @@
 {
  "html": {
+  "review_request": "/developer/review-request.html",
   "overview": "/developer/",
   "ai_instructions": "/developer/ai.html",
   "project": "/developer/project.html",
@@ -10,6 +11,7 @@
   "testing": "/developer/testing.html"
  },
  "markdown": {
+  "review_request": "/developer/review-request.md",
   "ai_instructions": "/developer/ai.md",
   "project": "/developer/project.md",
   "releases": "/developer/releases.md",

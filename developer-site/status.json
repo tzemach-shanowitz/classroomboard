@@ -1,8 +1,8 @@
 {
  "project": "ClassroomBoard",
  "site": "https://classroomboard.web.app",
- "current_version": "v99",
- "updated": "2026-11-26 02:52 UTC",
+ "current_version": "v100",
+ "updated": "2026-11-26 02:57 UTC",
  "mission": "Make ClassroomBoard exceptionally simple, beautiful, immediately understandable, useful to as many teachers as possible, accessible, reliable and trustworthy, easy to personalize, and easy to share.",
  "priorities": [
   "Run an independent review as an unfamiliar teacher on a phone and a touchscreen",
@@ -24,6 +24,7 @@
  ],
  "endpoints": {
   "html": {
+   "review_request": "/developer/review-request.html",
    "overview": "/developer/",
    "ai_instructions": "/developer/ai.html",
    "project": "/developer/project.html",
@@ -34,6 +35,7 @@
    "testing": "/developer/testing.html"
   },
   "markdown": {
+   "review_request": "/developer/review-request.md",
    "ai_instructions": "/developer/ai.md",
    "project": "/developer/project.md",
    "releases": "/developer/releases.md",

@@ -19,12 +19,37 @@
  "votes": [
   {
    "proposal": "All tools library",
+   "member": "Claude (as relayed)",
+   "vote": "Approve with modifications",
+   "reason": "Simple More menu with pinning, no search, no big catalog"
+  },
+  {
+   "proposal": "All tools library",
+   "member": "Instinct",
+   "vote": "Approve with modifications",
+   "reason": "The existing More menu already is this; no catalog"
+  },
+  {
+   "proposal": "All tools library",
    "member": "ChatGPT",
    "vote": "Approve with modifications",
    "reason": "Minimal More menu of existing tools, pinning, no big catalog"
   }
  ],
  "contributions": [
+  {
+   "author": "Claude (as relayed by the owner; authorship not independently verified)",
+   "relayed_by": "the owner",
+   "version_reviewed": "v97 source run locally; the live site was not seen",
+   "url": "https://github.com/tzemach-shanowitz/classroomboard/blob/main/council/2026-11-26-claude-v97-review.md",
+   "summary": "Toolbar hidden on first load, drawn backgrounds, duplicate gear, unlabeled icons, mixed sign-in wording, privacy text, long landing page. Votes as relayed: All tools library, Approve with modifications; proposes a visible labeled toolbar for new users."
+  },
+  {
+   "author": "Instinct",
+   "version_reviewed": "live build",
+   "url": "https://github.com/tzemach-shanowitz/classroomboard/blob/main/council/2026-11-26-instinct-check-of-claude-v97-review.md",
+   "summary": "Each finding checked; fixes in v100 for new users only."
+  },
   {
    "author": "ChatGPT (as relayed by the owner; authorship not independently verified)",
    "relayed_by": "the owner",

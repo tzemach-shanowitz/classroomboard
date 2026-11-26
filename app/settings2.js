@@ -379,7 +379,7 @@ const SUBS={
 };
 
 /* ---------- interface options: theme, accent, size, language, labels ---------- */
-cfg.ui=Object.assign({theme:'system',accent:'',size:'std',lang:'en',labels:false},cfg.ui||{});
+cfg.ui=Object.assign({theme:'system',accent:'',size:'std',lang:'en',labels:!window.__legacy},cfg.ui||{});
 const ACCS=['#0a84ff','#7d5cff','#1fa35b','#ff8a1f','#e5487f','#6e6e73'];
 const SIZES={sm:.88,std:1,lg:1.22};
 const lum=c=>{const m=/^#([0-9a-f]{6})$/i.exec(c||'');if(!m)return 0;const n=parseInt(m[1],16),f=v=>{v/=255;return v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4)};return .2126*f(n>>16)+.7152*f((n>>8)&255)+.0722*f(n&255)};
@@ -515,7 +515,7 @@ const CATS=[
  {id:'privacy',name:'Privacy & data',icon:'privacy',render:(pg,ctx)=>{
   pg.append(Group(null,Nav('Backup, restore and reset',()=>ctx.push(SUBS.data.title,SUBS.data.fn),{k:'backup',desc:'Download or restore a copy of everything.'})),
    Group('Sensitive access',Row('Microphone',null,{val:'Asked only when a widget opens',desc:'Sound level only. Nothing is recorded or sent.'}),Row('Camera',null,{val:'Asked only when Webcam opens',desc:'Stopped when the widget closes.'})),
-   Note('Student names stay in your account. Demo and guest screens use made-up names.'))}},
+   Note('Signed in: your class lists are saved in your account. Without an account they stay only in this browser (Settings, Account, Clear this device removes them). Demo screens use made-up names.'))}},
  {id:'advanced',name:'Advanced',icon:'advanced',render:(pg,ctx)=>{
   pg.append(Group('SMART Board',Nav('Pen and touch',()=>ctx.push(SUBS.input.title,SUBS.input.fn),{k:'input',desc:'Compatibility mode and input test.'}),
     Row('Input test',Btn('Open',()=>{ctx.close();setTimeout(()=>window.__openInputDiag&&window.__openInputDiag(),60)}),{k:'diag'})),

@@ -22,7 +22,7 @@ const DEF={
   loc:LEGACY?{name:'Brooklyn, NY',lat:40.6501,lon:-73.9496,tz:'America/New_York'}:{name:'',lat:40.6501,lon:-73.9496,tz:(Intl.DateTimeFormat().resolvedOptions().timeZone||'America/New_York')},
   clock:{date:LEGACY?'heb':'std',style:'num',hour12:true,showAmPm:false,size:6.4,color:'',opacity:1,visible:true,font:'Georgia, "Times New Roman", serif',pos:'tr'},
   bg:{auto:true,lockedId:null,brightness:1,blur:0,dim:.12,custom:[],favs:[],manualId:null,manualDay:null},
-  toolbar:{order:LEGACY?['home','whiteboard','timer','schedule','supplies','library','presentations','picker','wheel','behavior','more','anno','settings','full']:['whiteboard','timer','picker','traffic','sound','text','more','settings','home','schedule','supplies','library','presentations','wheel','behavior','anno','full'],hidden:LEGACY?[]:['home','schedule','supplies','library','presentations','wheel','behavior','anno','full'],size:72,opacity:.18,pos:'bottom',hideSecs:5,pinned:false},
+  toolbar:{order:LEGACY?['home','whiteboard','timer','schedule','supplies','library','presentations','picker','wheel','behavior','more','anno','settings','full']:['whiteboard','timer','picker','traffic','sound','text','more','settings','home','schedule','supplies','library','presentations','wheel','behavior','anno','full'],hidden:LEGACY?[]:['home','schedule','supplies','library','presentations','wheel','behavior','anno','full'],size:72,opacity:.18,pos:'bottom',hideSecs:5,pinned:!LEGACY},
   labels:LEGACY?{supplies:'וואס דארף מען האבן?',schedule:'סדר היום',picker:'ווער איז דער נעקסטער?',timer:'טײַמער',done:'די צייט איז אויס!'}:{supplies:'What we need today',schedule:'Schedule',picker:"Who's next?",timer:'Timer',done:"Time's up!"},
   timer:{def:300,presets:[1,2,5,10,15,20],volume:.7,sound:'bell',alarmSecs:6,repeat:false,mute:false,anim:true,repeatN:0,tab:false,autoReset:true,red:true,redMode:'pct',redPct:25,redSec:10,theme:0},
   teach:LEGACY?{start:'13:15',end:'16:00'}:{start:'08:30',end:'15:00'},
@@ -112,7 +112,7 @@ function currentBg(){const L=bgList(),b=cfg.bg,today=dayKey();
  if(b.lockedId){const f=L.find(x=>x.id===b.lockedId);if(f)return f}
  if(b.manualId&&(b.manualDay===today||!b.auto)){const f=L.find(x=>x.id===b.manualId);if(f)return f}
  if(!b.auto)return L[0];
- const pool=b.favs.length&&b.favOnly?L.filter(x=>b.favs.includes(x.id)):L;
+ const pool=b.favs.length&&b.favOnly?L.filter(x=>b.favs.includes(x.id)):(LEGACY?L:L.filter(x=>!/^s\d/.test(x.id)));
  const n=Math.floor(new Date(today+'T12:00:00Z')/86400000);return pool[n%pool.length]}
 let bgImgEl=null;
 function renderBg(){const b=currentBg(),e=$('#bg');e.style.backgroundImage=`url("${b.url}")`;e.style.filter=`brightness(${cfg.bg.brightness}) blur(${cfg.bg.blur}px)`;$('#bgdim').style.opacity=cfg.bg.dim;
@@ -436,7 +436,7 @@ function openLink(x){const wrap=h('div',{style:'position:fixed;inset:0;z-index:3
   $('#app-main').append(wrap);Ink.strokes=[];Ink.visible=true;Ink.ctxKey='anno.link.'+x.url.slice(-60);const prev=Store.get(Ink.ctxKey,[]);if(prev.length)toast('Saved handwriting exists for this item. Use "Restore saved".')}
 
 /* ---- settings ---- */
-const TOOLS={home:'Home / reset screen',whiteboard:'Whiteboard',timer:'Timer',schedule:'Schedule',supplies:'Supplies',library:'Library',presentations:'Presentations',picker:'Randomizer',wheel:'Spin the wheel',behavior:'Behavior & stars',audio:'Mincha audio',traffic:'Traffic light',sound:'Sound level',text:'Text',anno:'Write on screen',settings:'Settings',full:'Full screen'};
+const TOOLS={home:'Home / reset screen',whiteboard:'Whiteboard',timer:'Timer',schedule:'Schedule',supplies:'Supplies',library:'Library',presentations:'Presentations',picker:LEGACY?'Randomizer':'Name picker',wheel:'Spin the wheel',behavior:'Behavior & stars',audio:'Mincha audio',traffic:'Traffic light',sound:'Sound level',text:'Text',anno:'Write on screen',settings:'Settings',full:'Full screen'};
 function openSettings(tab='clock'){
   const tabs=[['account','👤 Account'],['clock','🕐 Clock'],['bg','🖼️ Background'],['toolbar','🧰 Toolbar'],['input','✍️ Pen & touch'],['labels','🏷️ Labels'],['timer','⏱️ Timer'],['supplies','📚 Supplies'],['students','🧒 Students'],['links','🔗 Links'],['share','📲 Share'],['data','💾 Backup']];
   const _ms=modal('Teacher settings',(b,c)=>{const draw=t=>{b.innerHTML='';b.append(h('div',{class:'tabs'},...tabs.map(([k,l])=>pill(l,()=>draw(k),k===t?'sel':''))));const P=h('div');b.append(P);S[t](P,()=>draw(t),c)};draw(tab)},{foot:c=>[pill('Done',c,'big sel')]});_ms.body.closest('.modal').classList.add('tset')}
@@ -485,7 +485,8 @@ function renderToolbar(){const t=cfg.toolbar,tb=$('#toolbar');for(const id of DE
   for(const id of t.order){if(t.hidden.includes(id))continue;{const nm=window.__t?window.__t(TOOLS[id]):TOOLS[id];const b=h('button',{class:'tbi'+(_u.labels?' lab':''),'data-id':id,title:nm,'aria-label':nm,onclick:()=>{Audio_.unlock();acts[id]();toolbarState();bump()},html:svgI(id)});if(_u.labels)b.append(h('span',{class:'tl'},nm));tb.append(b)}}
   toolbarState()}
 function toolbarState(){const on={whiteboard:!!App.wb,timer:!!Widgets.open.timer,schedule:!!Widgets.open.schedule,supplies:!!Widgets.open.supplies,picker:!!Widgets.open.picker,traffic:!!Widgets.open.traffic,sound:!!Widgets.open.sound,text:!!Widgets.open.text,wheel:!!Widgets.open.wheel,behavior:!!Widgets.open.behavior,audio:!!Widgets.open.audio,anno:Ink.mode==='write'&&!App.wb};document.querySelectorAll('#toolbar .tbi[data-id]').forEach(e=>e.classList.toggle('active',!!on[e.dataset.id]))}
-function toolbarShow(v){const tb=$('#toolbar');tb.dataset.off=v?'':'1';tb.classList.toggle('off',!v);clearTimeout(hideT);if(v&&!cfg.toolbar.pinned)hideT=setTimeout(()=>toolbarShow(false),cfg.toolbar.hideSecs*1000);$('#handle').style.opacity=v?0:1}
+function gearSync(){document.body.classList.toggle('nogear',!LEGACY&&!!cfg.toolbar.pinned&&!cfg.toolbar.hidden.includes('settings'))}
+function toolbarShow(v){gearSync();const tb=$('#toolbar');tb.dataset.off=v?'':'1';tb.classList.toggle('off',!v);clearTimeout(hideT);if(v&&!cfg.toolbar.pinned)hideT=setTimeout(()=>toolbarShow(false),cfg.toolbar.hideSecs*1000);$('#handle').style.opacity=v?0:1}
 function bump(){if($('#toolbar').dataset.off!=='1'&&!cfg.toolbar.pinned){clearTimeout(hideT);hideT=setTimeout(()=>toolbarShow(false),cfg.toolbar.hideSecs*1000)}}
 
 /* ---- boot ---- */
@@ -494,7 +495,7 @@ $('#handle').addEventListener('pointerdown',e=>{e.stopPropagation();toolbarShow(
 $('#toolbar').addEventListener('pointerdown',bump);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(Ink.mode!=='off'&&!App.wb)Ink.setMode('off');else toolbarShow(true)};if((e.ctrlKey||e.metaKey)&&e.key==='z'&&Ink.mode!=='off')Ink.undo()});
 document.addEventListener('gesturestart',e=>e.preventDefault());
-renderToolbar();toolbarShow(false);renderBg();renderClock();
+renderToolbar();toolbarShow(!LEGACY&&!!cfg.toolbar.pinned);renderBg();renderClock();
 if(!window.__demo&&'serviceWorker' in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 
 window.__sc={cfg,Store,Widgets,Ink,App,openTimer,openSchedule,openPicker,openSupplies,openSettings,enterWhiteboard,hebrewDate,toolbarShow,day:()=>day,dayKey,Audio_,TimerW,resetScreen,showSupplies,hebNum,sunsetOn};

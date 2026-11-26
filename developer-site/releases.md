@@ -1,5 +1,8 @@
 # Release history
 
+## v100 (2026-11-25)
+New users: toolbar visible with labels, one settings gear, photos only in the daily background, Name picker wording, Sign in wording everywhere, clearer guest privacy text. Landing page two sections shorter.
+
 ## v99 (2026-11-25)
 Clock and date: date centered under the clock as one unit, smaller and softer, same edge spacing, sizes follow the screen. Timer fills its widget on phones and scales on large screens. Version number shown on the landing page footer and the hub.
 
