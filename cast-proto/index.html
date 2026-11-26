@@ -1,0 +1,42 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Cast prototype (not part of ClassroomBoard)</title>
+<style>body{font:16px system-ui;max-width:760px;margin:24px auto;padding:0 16px;color:#1d1d1f}h1{font-size:22px}button{font:inherit;padding:10px 16px;border-radius:10px;border:1px solid #bbb;background:#f5f5f7;margin:4px 0}textarea{width:100%;height:90px;font:12px monospace}video{width:100%;background:#000;border-radius:12px;margin-top:8px}.b{border:1px solid #ddd;border-radius:12px;padding:12px;margin:12px 0}pre{background:#f5f5f7;padding:8px;border-radius:8px;white-space:pre-wrap}</style></head><body>
+<h1>Cast prototype</h1><p>Experiment only. Not linked from the app. Uses free public STUN, no relay, no accounts, no server: you copy codes between the two pages by hand.</p>
+<div class="b"><b>0. Board self-test</b> (open this on the SMART Board)<br><button id="st">Run self-test</button><pre id="stout">Not run.</pre><video id="stv" autoplay muted playsinline></video></div>
+<div class="b"><b>1. Board / receiver</b><br><button id="rx">I am the board: wait for a code</button><br>
+<textarea id="rin" placeholder="Paste the sender's code here"></textarea><br><button id="rmk">Make reply code</button><textarea id="rout" readonly placeholder="Reply code appears here"></textarea><video id="rv" autoplay playsinline controls></video></div>
+<div class="b"><b>2. Teacher laptop / sender</b><br><button id="tx">Share my screen and make a code</button><textarea id="sout" readonly></textarea><br><textarea id="sin" placeholder="Paste the board's reply code here"></textarea><br><button id="sgo">Connect</button><pre id="sst"></pre></div>
+<pre id="log"></pre>
+<script>
+const CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const $=id=>document.getElementById(id),log=m=>$('log').textContent+=m+'\n';
+const enc=d=>btoa(unescape(encodeURIComponent(JSON.stringify(d))));const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
+function gathered(pc){return new Promise(r=>{if(pc.iceGatheringState==='complete')return r();pc.onicegatheringstatechange=()=>pc.iceGatheringState==='complete'&&r();setTimeout(r,4000)})}
+let pc;
+$('tx').onclick=async()=>{try{
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia){$('sst').textContent='This browser cannot capture the screen (no getDisplayMedia).';return}
+ const s=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:15},audio:false});
+ pc=new RTCPeerConnection(CFG);s.getTracks().forEach(t=>pc.addTrack(t,s));
+ pc.onconnectionstatechange=()=>$('sst').textContent='Connection: '+pc.connectionState;
+ await pc.setLocalDescription(await pc.createOffer());await gathered(pc);
+ $('sout').value=enc(pc.localDescription);$('sst').textContent='Copy the code to the board.';
+}catch(e){$('sst').textContent='Error: '+e.name+' '+e.message}};
+$('sgo').onclick=async()=>{try{await pc.setRemoteDescription(dec($('sin').value))}catch(e){$('sst').textContent='Error: '+e.message}};
+$('rmk').onclick=async()=>{try{
+ pc=new RTCPeerConnection(CFG);pc.ontrack=e=>{$('rv').srcObject=e.streams[0]};
+ pc.onconnectionstatechange=()=>log('board connection: '+pc.connectionState);
+ await pc.setRemoteDescription(dec($('rin').value));await pc.setLocalDescription(await pc.createAnswer());await gathered(pc);
+ $('rout').value=enc(pc.localDescription);
+}catch(e){log('Error: '+e.name+' '+e.message)}};
+$('st').onclick=async()=>{const o=[];const P=(k,v)=>{o.push(k+': '+v);$('stout').textContent=o.join('\n')};
+ P('RTCPeerConnection',!!window.RTCPeerConnection);P('getDisplayMedia (sending)',!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia));
+ P('secure context (https)',window.isSecureContext);
+ try{const c=RTCRtpReceiver.getCapabilities('video').codecs.map(x=>x.mimeType.replace('video/','')).filter((v,i,a)=>a.indexOf(v)==i);P('video codecs it can receive',c.join(', '))}catch(e){P('codec list','unavailable')}
+ if(!window.RTCPeerConnection)return;
+ try{const cv=document.createElement('canvas');cv.width=640;cv.height=360;const x=cv.getContext('2d');let n=0;setInterval(()=>{x.fillStyle='#08f';x.fillRect(0,0,640,360);x.fillStyle='#fff';x.font='60px sans-serif';x.fillText('frame '+(n++),60,200)},66);
+ const s=cv.captureStream(15);const a=new RTCPeerConnection(),b=new RTCPeerConnection();
+ a.onicecandidate=e=>e.candidate&&b.addIceCandidate(e.candidate);b.onicecandidate=e=>e.candidate&&a.addIceCandidate(e.candidate);
+ b.ontrack=e=>{$('stv').srcObject=e.streams[0];P('video track received','yes')};
+ s.getTracks().forEach(t=>a.addTrack(t,s));await a.setLocalDescription(await a.createOffer());await b.setRemoteDescription(a.localDescription);await b.setLocalDescription(await b.createAnswer());await a.setRemoteDescription(b.localDescription);
+ setTimeout(async()=>{const st=await b.getStats();let f=0;st.forEach(r=>{if(r.type==='inbound-rtp'&&r.kind==='video')f=r.framesDecoded});P('frames decoded after 4s',f+(f>0?'  PASS':'  FAIL'))},4000);
+ }catch(e){P('loopback error',e.name+' '+e.message)}};
+</script></body></html>
