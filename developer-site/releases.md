@@ -1,5 +1,11 @@
 # Release history
 
+## v99 (2026-11-25)
+Clock and date: date centered under the clock as one unit, smaller and softer, same edge spacing, sizes follow the screen. Timer fills its widget on phones and scales on large screens. Version number shown on the landing page footer and the hub.
+
+## v98 (2026-11-25)
+Shared computer: Clear this device option for people without an account. Sign out wording says what stays on the device; Start fresh option.
+
 ## v97 (2026-11-25)
 The page direction now follows the interface language (English is left to right; Hebrew and Yiddish stay right to left). Background images are cached. Council: first relayed review recorded.
 

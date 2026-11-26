@@ -28,6 +28,19 @@
   {
    "author": "ChatGPT (as relayed by the owner; authorship not independently verified)",
    "relayed_by": "the owner",
+   "version_reviewed": "second review; it could not see the v98 changes or render the app",
+   "url": "https://github.com/tzemach-shanowitz/classroomboard/blob/main/council/2026-11-25-chatgpt-review-2.md",
+   "summary": "Asked for version consistency, one landing entry button, fresh-session tests, clock and timer fixes, privacy clarity, and a fresh review package. Instinct checked each point; see the check note."
+  },
+  {
+   "author": "Instinct",
+   "version_reviewed": "live build",
+   "url": "https://github.com/tzemach-shanowitz/classroomboard/blob/main/council/2026-11-25-instinct-check-of-chatgpt-review-2.md",
+   "summary": "Point-by-point check of the second ChatGPT review."
+  },
+  {
+   "author": "ChatGPT (as relayed by the owner; authorship not independently verified)",
+   "relayed_by": "the owner",
    "version_reviewed": "public landing page and docs; it could not render the interactive app",
    "url": "https://github.com/tzemach-shanowitz/classroomboard/blob/main/council/2026-11-25-chatgpt-review.md",
    "summary": "Landing focus and entry points, trust info, branding, unverified promises. Vote on the All tools library: Approve with changes (minimal More menu of existing tools, pinning, no big catalog)."

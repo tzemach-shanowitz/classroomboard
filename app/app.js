@@ -85,9 +85,9 @@ const fmtT=t=>{const m=toMin(t);if(!cfg.schedFmt.h12)return t;const hh=Math.floo
 function renderClock(){
   const c=$('#clock'),k=cfg.clock,now=new Date();
   c.style.display=k.visible?'':'none';c.style.opacity=k.opacity;c.style.color=k.color||'';
-  c.style.top=k.pos[0]==='t'?'2.2vh':'auto';c.style.bottom=k.pos[0]==='b'?'2.2vh':'auto';
-  c.style.right=k.pos[1]==='r'?'2.6vw':'auto';c.style.left=k.pos[1]==='l'?'2.6vw':'auto';
-  const t=$('#clk-time');t.style.fontSize=(k.style==='words'?k.size*.8:k.size)+'vh';t.style.fontFamily=k.font;
+  c.style.top=k.pos[0]==='t'?'var(--edge)':'auto';c.style.bottom=k.pos[0]==='b'?'var(--edge)':'auto';
+  c.style.right=k.pos[1]==='r'?'var(--edge)':'auto';c.style.left=k.pos[1]==='l'?'var(--edge)':'auto';
+  const t=$('#clk-time');{const u=(k.style==='words'?k.size*.8:k.size);t.style.fontSize='calc(min(1vh,1.5vw)*'+u+')';$('#clk-heb').style.fontSize='calc(min(1vh,1.5vw)*'+(u*.34).toFixed(2)+')'}t.style.fontFamily=k.font;
   t.textContent=timeStr(now);
   {const dm=k.date||'heb';let tx='';try{const std=now.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric'});tx=dm==='std'?std:dm==='both'?std+' · '+hebrewDate(now):dm==='none'?'':hebrewDate(now)}catch(e){tx=hebrewDate(now)}$('#clk-heb').textContent=tx}
 }
@@ -251,7 +251,7 @@ const TimerW={left:300,total:300,running:false,end:0,iv:null,stopAlarm:null,done
 const THEMES=[['#5b4bdb','Purple'],['#1f9d6b','Green'],['#e8890c','Orange'],['#d6458f','Pink'],['#2b7fd4','Blue'],['#12a3a3','Teal'],['#c9a400','Gold'],['glass','Glass']];
 function openTimer(){
   if(Widgets.open.timer){Widgets.raise('timer');return}
-  const inst=Widgets.create('timer',cfg.labels.timer,{x:innerWidth-520,y:150,w:380,h:560,onclose:()=>{clearInterval(TimerW.iv);TimerW.running=false;TimerW.stopAlarm&&TimerW.stopAlarm();TimerW.done=false;TimerW.stopAlarm=null;document.title='ClassroomBoard'},settings:timerSettings});
+  const inst=Widgets.create('timer',cfg.labels.timer,{x:innerWidth-(Math.min(Math.max(380,innerWidth*.22),640)+140),y:150,w:Math.round(Math.min(Math.max(380,innerWidth*.22),640)),h:Math.round(Math.min(Math.max(380,innerWidth*.22),640)*1.47),onclose:()=>{clearInterval(TimerW.iv);TimerW.running=false;TimerW.stopAlarm&&TimerW.stopAlarm();TimerW.done=false;TimerW.stopAlarm=null;document.title='ClassroomBoard'},settings:timerSettings});
   const th=THEMES[cfg.timer.theme]||THEMES[0];
   if(th[0]!=='glass')inst.el.classList.add('light');
   inst.el.style.setProperty('--tacc',th[0]==='glass'?'#7cc4ff':th[0]);
@@ -277,7 +277,8 @@ function openTimer(){
    playB.innerHTML=TimerW.running?'<span class="pz"></span>':'<span class="pl"></span>';
    if(cfg.timer.tab)document.title=(TimerW.running?t+' · ':'')+'ClassroomBoard'};
   inst.paint=paint;
-  const ro=new ResizeObserver(()=>{inst.el.classList.toggle('compact',inst.el.offsetWidth<330||inst.el.offsetHeight<250)});ro.observe(inst.el);
+  const fit=()=>{if(inst.el.classList.contains('compact'))return;const bw=body.clientWidth-24,gap=8;const used=ctrl.offsetHeight+presets.offsetHeight+gap*3;const sz=Math.floor(Math.max(120,Math.min(bw,body.clientHeight-used,900)));ringwrap.style.width=sz+'px';body.style.setProperty('--rs',sz+'px')};
+  const ro=new ResizeObserver(()=>{inst.el.classList.toggle('compact',inst.el.offsetWidth<330||inst.el.offsetHeight<250);fit()});ro.observe(inst.el);setTimeout(fit,60);
   const clearDone=()=>{const d=body.querySelector('.donebox');d&&d.remove();inst.el.classList.remove('done')};
   function setT(sec){TimerW.running=false;clearInterval(TimerW.iv);TimerW.total=TimerW.left=clamp(sec,5,5999);TimerW.done=false;TimerW.repeatsLeft=cfg.timer.repeatN||0;clearDone();TimerW.stopAlarm&&TimerW.stopAlarm();paint()}
   function finish(){clearInterval(TimerW.iv);TimerW.running=false;TimerW.done=true;if(cfg.timer.anim)inst.el.classList.add('done');TimerW.stopAlarm=Audio_.play(cfg.timer.sound,cfg.timer.volume,cfg.timer.alarmSecs,cfg.timer.repeat);

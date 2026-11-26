@@ -55,7 +55,7 @@ Still legacy-looking: Library and Presentations browser popups, parts inside a f
 Free services only. Three traffic-light colors (orange only for behavior marks: green 0, yellow 1, orange 2, red 3). Student-facing text in Yiddish/Hebrew, teacher settings in English. Hebrew date stays the default under the clock for his account. Login stays open to anyone. Never remove features or delete saved data. Only fictional names in public artifacts.
 
 ## History
-The project was developed outside git. This repo is a single sanitized snapshot of the current build (v97). Earlier checkpoints were not imported because they contain the personal values removed above.
+The project was developed outside git. This repo is a single sanitized snapshot of the current build (v99). Earlier checkpoints were not imported because they contain the personal values removed above.
 
 ## Developer Hub
 `developer-src/gen.py` generates the open read-only hub (static HTML, JSON, Markdown); `developer-site/` is the generated output deployed at `/developer/`. Submissions go through GitHub Issues. Protected write API and MCP are not built (they need hosting beyond the free tier).
