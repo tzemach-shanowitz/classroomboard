@@ -1,5 +1,8 @@
 # Release history
 
+## v97 (2026-11-25)
+The page direction now follows the interface language (English is left to right; Hebrew and Yiddish stay right to left). Background images are cached. Council: first relayed review recorded.
+
 ## v96 (2026-11-25)
 Landing page names the universal tools and has one entry action per state. Guest-to-account sign-in keeps the account's data and saves the guest's discarded settings with a Restore option.
 

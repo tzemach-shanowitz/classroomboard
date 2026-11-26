@@ -317,8 +317,8 @@ const SUBS={
   pg.append(Group(null,Row('Signed in as',null,{val:u.email||u.displayName}),Row('Status',null,{val:stTxt+(C.lastSync?' · '+new Date(C.lastSync).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):''),desc:C.msg||''}),Row('Save now',Btn('Save now',async()=>{await C.flush();toast('Saved');ctx.re()}))),
    (C.guestBackupInfo&&C.guestBackupInfo().count)?Group('Guest setup',Row('From before you signed in',h('div',{style:'display:flex;gap:8px'},Btn('Restore',()=>sure('Bring back your guest settings? They will replace the same settings in your account. Class lists are added, not replaced.',()=>{const n=C.restoreGuest();toast('Restored');ctx.re()})),Btn('Dismiss',()=>{C.discardGuestBackup();ctx.re()})),{desc:'Your account\'s classroom was kept as it was. Your guest version is saved on this device so nothing is lost.'})):null,
    Group('Google Drive',Row(C.hasDrive()?'Connected':'Not connected',Btn(C.hasDrive()?'Reconnect':'Connect',async()=>{try{await C.driveToken(true);toast('Google Drive connected');ctx.re()}catch(e){toast('Could not connect: '+(e.code||e.message))}}),{desc:'Optional. Read only: ClassroomBoard can look at your files and can never change or delete them. Lasts about an hour.'})),
-   Group(null,Row('Sign out',Btn('Sign out',async()=>{await C.signOut();ctx.re()}),{desc:'Your data stays saved online.'})),
-   Group('Danger zone',Row('Sign out and clear this device',Btn('Clear',()=>sure('Sign out and remove all saved data from this device? Your account keeps it online.',async()=>{await C.signOut(true)}),'dg')),
+   Group(null,Row('Sign out',Btn('Sign out',async()=>{await C.signOut();toast('Signed out. This device still shows the classroom it has.');ctx.re()}),{desc:'Your data stays saved online. This device keeps showing the classroom it has now.'})),
+   Group('Danger zone',Row('Sign out and start fresh',Btn('Start fresh',()=>sure('Sign out and remove all saved data from this device, so it looks like a new teacher opened it? Your account keeps everything online.',async()=>{await C.signOut(true)}),'dg')),
     Row('Delete my account and data',Btn('Delete…',()=>deleteAcct(C),'dg'),{desc:'Asks you to confirm.'})));
   if(!window.__s2accSub){window.__s2accSub=1;C.onChange(()=>{const P=document.querySelector('.s2pg[data-acc]');if(P&&P.isConnected&&!P.contains(document.activeElement)){clearTimeout(window.__s2accT);window.__s2accT=setTimeout(()=>window.__s2accRe&&window.__s2accRe(),120)}})}
   window.__s2accRe=ctx.re}},
@@ -389,7 +389,7 @@ function applyUi(){const u=cfg.ui,r=document.documentElement;
   if(u.accent){r.style.setProperty('--uiac',u.accent);r.style.setProperty('--acc',u.accent);r.style.setProperty('--accfg',lum(u.accent)>.45?'#10202c':'#fff')}
   else{r.style.removeProperty('--uiac');r.style.removeProperty('--acc');r.style.removeProperty('--accfg')}
   const z=SIZES[u.size]||1;window.__uis=z;r.style.setProperty('--z',z);
-  r.lang=u.lang==='yi'?'yi':u.lang==='he'?'he':'en';window.__lang=u.lang;
+  r.lang=u.lang==='yi'?'yi':u.lang==='he'?'he':'en';window.__lang=u.lang;if(!window.__legacy&&!(typeof LEGACY!=='undefined'&&LEGACY))r.dir=u.lang==='en'?'ltr':'rtl';
   try{renderToolbar()}catch(e){}
   const w=document.querySelector('.s2');if(w){w.dir=u.lang==='en'?'ltr':'rtl';xl(w)}}
 if(mq&&mq.addEventListener)mq.addEventListener('change',()=>{if(cfg.ui.theme==='system')applyUi()});

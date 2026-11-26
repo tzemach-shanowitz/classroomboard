@@ -180,7 +180,7 @@ S.share=function(P){const url='https://classroomboard.web.app';
  setTimeout(()=>{if(window.Cloud&&window.Cloud.user)return;localStorage.setItem('scmeta.welcomed','1');
   modal('Welcome to ClassroomBoard',(b,c)=>{
    b.append(h('div',{class:'card',style:'line-height:1.5'},'Sign in to save your classroom and use it on any device. You can also keep going without an account.'),
-    h('div',{class:'lbl'},'Tip: use first names or initials for your students. ',h('a',{href:'about.html',target:'_blank',style:'color:#0a84ff'},'What is this?')));
+    h('div',{class:'lbl'},'Tip: use first names or initials for your students. ',h('a',{href:'/privacy.html',target:'_blank',style:'color:#0a84ff'},'Privacy')));
    authUI(b,()=>c());
   },{foot:c=>[pill('Continue without an account',c,'big')]})},900)})();
 

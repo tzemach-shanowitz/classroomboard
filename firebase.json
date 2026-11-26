@@ -1,11 +1,41 @@
 {
-  "hosting": {
-    "public": "dist",
-    "ignore": ["firebase.json", "**/.*"],
+ "hosting": {
+  "public": "dist",
+  "ignore": [
+   "firebase.json",
+   "**/.*"
+  ],
+  "headers": [
+   {
+    "source": "**",
     "headers": [
-      {"source": "**", "headers": [{"key": "Cache-Control", "value": "no-cache"}]},
-      {"source": "/bg/**", "headers": [{"key": "Cache-Control", "value": "public, max-age=86400"}]}
+     {
+      "key": "Cache-Control",
+      "value": "no-cache"
+     }
     ]
-  },
-  "firestore": {"rules": "firestore.rules"}
+   },
+   {
+    "source": "/bg/**",
+    "headers": [
+     {
+      "key": "Cache-Control",
+      "value": "public, max-age=86400"
+     }
+    ]
+   },
+   {
+    "source": "/app/bg/**",
+    "headers": [
+     {
+      "key": "Cache-Control",
+      "value": "public, max-age=86400"
+     }
+    ]
+   }
+  ]
+ },
+ "firestore": {
+  "rules": "firestore.rules"
+ }
 }
