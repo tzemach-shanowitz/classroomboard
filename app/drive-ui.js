@@ -168,7 +168,7 @@ window.driveFolders=driveFolders;
 /* ---- Share tab ---- */
 S.share=function(P){const url='https://classroomboard.web.app';
   P.append(h('div',{class:'card',style:'text-align:center'},h('img',{src:'qr.svg',alt:'QR code',style:'width:220px;height:220px;background:#fff;border-radius:12px'}),h('div',{style:'font-size:20px;font-weight:600;margin-top:8px',dir:'ltr'},'classroomboard.web.app')),
-    h('div',{class:'row'},pill('Copy link',()=>{try{navigator.clipboard.writeText(url);toast('Link copied')}catch(e){toast(url)}},'big'),navigator.share?pill('Share…',()=>navigator.share({title:'My Smart Classroom',url}).catch(()=>{}),'big'):''),
+    h('div',{class:'row'},pill('Copy link',()=>{try{navigator.clipboard.writeText(url);toast('Link copied')}catch(e){toast(url)}},'big'),navigator.share?pill('Share…',()=>navigator.share({title:'ClassroomBoard',url}).catch(()=>{}),'big'):''),
     h('div',{class:'lbl'},'How to use it'),
     h('div',{class:'card',style:'line-height:1.5'},'1. Open the link on your computer, phone or smart board.',h('br'),'2. Tap the gear, then Account, and make a free account (Google or email).',h('br'),'3. Add your students in Settings > Students. Tip: use first names or initials.',h('br'),'4. Your setup is saved to your account and works on any device you sign in on.'),
     h('div',{class:'lbl'},'Handy pages'),
@@ -176,10 +176,10 @@ S.share=function(P){const url='https://classroomboard.web.app';
 /* ---- first-run welcome (new people only) ---- */
 (function(){const q=new URLSearchParams(location.search).get('view');
  const forced=new URLSearchParams(location.search).get('login');if(window.__demo)return;
- if(!forced&&(window.__legacy||q==='board'||localStorage.getItem('scmeta.welcomed')))return;
+ if(!forced)return; /* guests go straight to a clean classroom; the sign-in sheet only opens on the login route */
  setTimeout(()=>{if(window.Cloud&&window.Cloud.user)return;localStorage.setItem('scmeta.welcomed','1');
   modal('Welcome to ClassroomBoard',(b,c)=>{
-   b.append(h('div',{class:'card',style:'line-height:1.5'},'A calm classroom screen with a clock, timer, schedule, name picker, prize wheel, behavior stars and a whiteboard. Make a free account to save your setup and use it on any device, or continue without one.'),
+   b.append(h('div',{class:'card',style:'line-height:1.5'},'Sign in to save your classroom and use it on any device. You can also keep going without an account.'),
     h('div',{class:'lbl'},'Tip: use first names or initials for your students. ',h('a',{href:'about.html',target:'_blank',style:'color:#0a84ff'},'What is this?')));
    authUI(b,()=>c());
   },{foot:c=>[pill('Continue without an account',c,'big')]})},900)})();

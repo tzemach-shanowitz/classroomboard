@@ -1,0 +1,52 @@
+{
+ "project": "ClassroomBoard",
+ "site": "https://classroomboard.web.app",
+ "current_version": "v96",
+ "updated": "2026-11-26 02:28 UTC",
+ "mission": "Make ClassroomBoard exceptionally simple, beautiful, immediately understandable, useful to as many teachers as possible, accessible, reliable and trustworthy, easy to personalize, and easy to share.",
+ "priorities": [
+  "Run an independent review as an unfamiliar teacher on a phone and a touchscreen",
+  "Finish the older popups so every screen looks the same",
+  "Review the Hebrew and Yiddish text with a native reader",
+  "Add an automated smoke test",
+  "Accessibility pass (keyboard, contrast, screen reader labels) with measured results"
+ ],
+ "verified": [
+  "Desktop Chrome with demo data: settings pages, schedule, links, behavior, widget sheets open without page errors",
+  "Legacy (owner) profile keeps its toolbar, labels, location and Hebrew date after the neutral-defaults change",
+  "Account, share, undo, restore-guest-setup flows tested in desktop Chrome"
+ ],
+ "not_verified": [
+  "Real SMART Board",
+  "Real phone and touchscreen",
+  "Real Google or email sign-in end to end",
+  "Native-speaker review of Hebrew and Yiddish"
+ ],
+ "endpoints": {
+  "html": {
+   "overview": "/developer/",
+   "ai_instructions": "/developer/ai.html",
+   "project": "/developer/project.html",
+   "releases": "/developer/releases.html",
+   "bugs": "/developer/bugs.html",
+   "suggestions": "/developer/suggestions.html",
+   "council": "/developer/council.html",
+   "testing": "/developer/testing.html"
+  },
+  "markdown": {
+   "ai_instructions": "/developer/ai.md",
+   "project": "/developer/project.md",
+   "releases": "/developer/releases.md",
+   "bugs": "/developer/bugs.md"
+  },
+  "json": {
+   "index": "/developer/index.json",
+   "status": "/developer/status.json",
+   "releases": "/developer/releases.json",
+   "bugs": "/developer/bugs.json",
+   "council": "/developer/council.json"
+  },
+  "source": "https://github.com/tzemach-shanowitz/classroomboard",
+  "submit": "https://github.com/tzemach-shanowitz/classroomboard/issues/new"
+ }
+}

@@ -1,0 +1,35 @@
+{
+ "bugs": [
+  {
+   "id": "not-tested-hardware",
+   "summary": "Not tested on a real SMART Board, a real phone or real teachers. Only desktop Chrome with demo data.",
+   "status": "open"
+  },
+  {
+   "id": "legacy-popups",
+   "summary": "Library and Presentations browser popups and parts inside a few widget settings sheets still use the older look.",
+   "status": "open"
+  },
+  {
+   "id": "translations",
+   "summary": "Hebrew and Yiddish text is an unreviewed draft. Newer strings (schedule, links, widget sheets) fall back to English.",
+   "status": "open"
+  },
+  {
+   "id": "large-size",
+   "summary": "The Large interface size does not scale the older modal windows.",
+   "status": "open"
+  },
+  {
+   "id": "live-signin-untested",
+   "summary": "The guest-to-account merge was verified by code reading and a restore test, not by an end-to-end sign-in with a real new account.",
+   "status": "open"
+  },
+  {
+   "id": "no-test-suite",
+   "summary": "There is no automated test suite in the repository. Tests so far were ad hoc browser scripts.",
+   "status": "open"
+  }
+ ],
+ "note": "Only non-sensitive items are published here."
+}

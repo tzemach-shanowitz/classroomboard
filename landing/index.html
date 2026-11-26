@@ -1,7 +1,7 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>ClassroomBoard: Everything you need to teach. One beautiful screen.</title>
 <meta name="description" content="A free classroom screen for your smart board: timer, whiteboard, schedule, supplies, name picker, behavior and stars. Try it with no account.">
-<link rel="icon" href="img/icon.svg"><style>
+<meta property="og:title" content="ClassroomBoard: Everything you need to teach. One beautiful screen."><meta property="og:description" content="A free classroom screen: timer, whiteboard, name picker, traffic light, schedule and more. No account needed."><meta property="og:type" content="website"><meta property="og:url" content="https://classroomboard.web.app/"><meta property="og:image" content="https://classroomboard.web.app/img/home.jpg"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="img/icon.svg"><link rel="apple-touch-icon" href="img/icon.svg"><style>
 *{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
 body{background:#0b1020;color:#e9ecf6;font:17px/1.6 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}.w{max-width:1160px;margin:0 auto;padding:0 24px}
@@ -41,7 +41,7 @@ section{padding:84px 0}h2{font-size:clamp(28px,3.4vw,42px);line-height:1.12;lett
 .cmp{width:100%;max-width:720px;margin-top:34px;border-collapse:collapse}.cmp td,.cmp th{padding:14px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:16px}.cmp th{color:#8c94b0;font-weight:600;font-size:14px}.cmp td+td,.cmp th+th{text-align:center;width:150px}.y{color:#7ee0a3}.n{color:#5b637e}
 .final{text-align:center;padding:110px 0;background:radial-gradient(ellipse at 50% 0,rgba(109,94,252,.25),transparent 60%)}.final .cta{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
 footer{padding:34px 0;color:#6f7794;font-size:14px;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
-.acct{display:none;align-items:center;gap:10px}.acct .av{width:32px;height:32px;border-radius:50%;background:#6d5efc;display:grid;place-items:center;font-weight:700;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 22px}.chips span{background:#fff;border:1px solid #dfe3f0;border-radius:999px;padding:6px 14px;font-size:14px;color:#3a4160}.acct{display:none;align-items:center;gap:10px}.acct .av{width:32px;height:32px;border-radius:50%;background:#6d5efc;display:grid;place-items:center;font-weight:700;font-size:14px}
 @media(max-width:860px){.hero .w,.feat,.feat.r{grid-template-columns:1fr;gap:28px}.feat.r .txt{order:0}.steps{grid-template-columns:1fr 1fr}.real{grid-template-columns:1fr}nav a.l.h{display:none}.hero{padding-top:40px}section{padding:56px 0}.prev .bar .btn{margin-left:0}}
 @media(max-width:480px){.logo{font-size:16px}.logo i{width:26px;height:26px}nav a.l{font-size:14px}.steps{grid-template-columns:1fr}nav .w{gap:12px}.btn.s{padding:8px 12px}}
 
@@ -73,7 +73,8 @@ footer{color:#767e95;border-top:1px solid rgba(20,30,60,.08)}
 
 <header class="hero"><div class="w"><div>
 <h1>Everything you need to teach. <em>One beautiful screen.</em></h1>
-<p class="sub">Timer, whiteboard, schedule, supplies, name picker, behavior and stars, together on one calm classroom screen for your smart board or any browser.</p>
+<p class="sub">Timer, whiteboard, name picker, traffic light, sound meter and more, together on one calm classroom screen for your smart board, projector or any browser. Free, and no account needed to start.</p>
+<div class="chips" aria-label="Included tools"><span>Timer</span><span>Whiteboard</span><span>Name picker</span><span>Traffic light</span><span>Sound level</span><span>Text</span><span>Schedule</span><span>Behavior &amp; stars</span><span>Polls &amp; more</span></div>
 <div class="cta"><a class="btn" href="app/?guest=1" data-try>Try for Free</a><a class="btn g" href="#how">See How It Works</a></div>
 <small>No account required. Log in whenever you're ready to save your work.</small></div>
 <div class="prev"><div class="frame" id="hero"><iframe title="ClassroomBoard preview" loading="eager" src="app/?demo=timer"></iframe></div>
@@ -134,7 +135,7 @@ footer{color:#767e95;border-top:1px solid rgba(20,30,60,.08)}
 <div style="display:flex;justify-content:center"><div class="phone"><iframe title="Phone view" loading="lazy" src="app/?demo=home&view=mark"></iframe></div></div></div></div></section>
 
 <section class="final"><div class="w"><h2>Your next lesson starts here.</h2><div class="cta"><a class="btn" href="app/?guest=1" data-try>Try ClassroomBoard for Free</a><a class="btn g" href="app/?login=1" id="login2">Log in to your classroom</a></div></div></section>
-<footer>ClassroomBoard · free for teachers</footer>
+<footer style="display:flex;gap:18px;justify-content:center;flex-wrap:wrap">ClassroomBoard · free for teachers<a href="help.html">Help</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a><a href="developer/">Developers</a></footer>
 
 <script>
 (function(){
@@ -144,7 +145,7 @@ if(Q.has('view')){L.replace('app/'+L.search);return}
 // returning users go to their classroom
 try{if(!Q.has('landing')&&(ls.getItem('scmeta.uid')||ls.getItem('sc.cfg'))){L.replace('app/'+L.search);return}}catch(e){}
 if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){if(x.scope.replace(/\/$/,'')===L.origin)x.unregister()})}).catch(function(){});
-var em=ls.getItem('scmeta.email');if(ls.getItem('scmeta.uid')||em){document.getElementById('acct').style.display='flex';document.getElementById('login').style.display='none';document.getElementById('av').textContent=(em||'A')[0].toUpperCase()}
+var em=ls.getItem('scmeta.email');if(ls.getItem('scmeta.uid')||em){document.getElementById('acct').style.display='flex';document.getElementById('login').style.display='none';document.getElementById('av').textContent=(em||'A')[0].toUpperCase();var tn=document.getElementById('tryNav');if(tn)tn.style.display='none';document.querySelectorAll('[data-try]').forEach(function(a){a.setAttribute('href','app/');if(a.id!=='tryNav')a.textContent='Open your classroom'});var l2=document.getElementById('login2');if(l2)l2.style.display='none'}
 document.querySelectorAll('[data-try]').forEach(function(a){a.addEventListener('click',function(){try{ls.setItem('scmeta.welcomed','1')}catch(e){}})});
 // scale iframes
 function fit(f){var c=f.parentNode,s=c.clientWidth/1280;f.style.transform='scale('+s+')'}

@@ -1,0 +1,26 @@
+{
+ "members": [
+  {
+   "name": "Instinct",
+   "role": "Lead agent and project manager. Executes development.",
+   "connected": true
+  },
+  {
+   "name": "ChatGPT",
+   "role": "Council member. Not yet connected: no contribution has been recorded.",
+   "connected": false
+  },
+  {
+   "name": "Claude",
+   "role": "Council member. Not yet connected: no contribution has been recorded.",
+   "connected": false
+  }
+ ],
+ "votes": [],
+ "rules": [
+  "Every contribution names the actual author, time, version and feature.",
+  "Content relayed by a person is labeled 'relayed' with its source. Nothing is written in an AI's name unless it was actually sent.",
+  "Council votes: Approve, Approve with modifications, Reject, Request more information, Refer to owner. Each vote has a short reason.",
+  "The owner makes the final decision."
+ ]
+}

@@ -172,7 +172,7 @@ const Note=t=>h('div',{class:'s2note'},t);
 /* ---------- state ---------- */
 let ST=null,ST_edit=null,mode2='in';let schedDate=dayKey(),pendAdd=false;
 const DIRECT={behavior:'classroom',schedule:'classroom'};
-function openSettings2(tab){
+function openSettings2(tab,sub){
   document.querySelectorAll('.s2scrim').forEach(x=>x.remove());
   const scrim=h('div',{class:'s2scrim'}),win=h('div',{class:'s2',role:'dialog','aria-modal':'true','aria-label':'Settings'});scrim.append(win);
   const side=h('div',{class:'s2side'}),main=h('div',{class:'s2main'}),body=h('div',{class:'s2body'},side,main);
@@ -215,6 +215,7 @@ function openSettings2(tab){
     if(!hits.length)pg.append(Note('Nothing matches "'+q.value+'".'));
     else pg.append(Group(null,...hits.map(e=>Row(e.n,null,{val:CATS.find(c=>c.id===e.c).name,go:()=>{q.value='';ST.cat=e.c;ST.stack=[];ST.mobileList=false;render();if(e.s)push(SUBS[e.s].title,SUBS[e.s].fn);setTimeout(()=>{const r=[...document.querySelectorAll('.s2row')].find(x=>x.dataset.k===e.r);if(r){r.scrollIntoView({block:'center'});r.style.background='#e8f2ff';setTimeout(()=>r.style.background='',1600)}},60)}}))))});
   win.dir=cfg.ui.lang==='en'?'ltr':'rtl';
+  if(sub&&SUBS[sub])ST.stack.push({title:SUBS[sub].title,fn:SUBS[sub].fn});
   render();
   if(tab==='behavior')push(SUBS.behavior.title,SUBS.behavior.fn);else if(tab==='schedule')push(SUBS.sched.title,SUBS.sched.fn);
   return{close};
@@ -314,6 +315,7 @@ const SUBS={
    return}
   const stTxt={'signed-out':'Not signed in','syncing':'Saving…','ok':'Saved online','warn':'Saved online, with a warning','error':'Problem saving online'}[C.status]||C.status;
   pg.append(Group(null,Row('Signed in as',null,{val:u.email||u.displayName}),Row('Status',null,{val:stTxt+(C.lastSync?' · '+new Date(C.lastSync).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):''),desc:C.msg||''}),Row('Save now',Btn('Save now',async()=>{await C.flush();toast('Saved');ctx.re()}))),
+   (C.guestBackupInfo&&C.guestBackupInfo().count)?Group('Guest setup',Row('From before you signed in',h('div',{style:'display:flex;gap:8px'},Btn('Restore',()=>sure('Bring back your guest settings? They will replace the same settings in your account. Class lists are added, not replaced.',()=>{const n=C.restoreGuest();toast('Restored');ctx.re()})),Btn('Dismiss',()=>{C.discardGuestBackup();ctx.re()})),{desc:'Your account\'s classroom was kept as it was. Your guest version is saved on this device so nothing is lost.'})):null,
    Group('Google Drive',Row(C.hasDrive()?'Connected':'Not connected',Btn(C.hasDrive()?'Reconnect':'Connect',async()=>{try{await C.driveToken(true);toast('Google Drive connected');ctx.re()}catch(e){toast('Could not connect: '+(e.code||e.message))}}),{desc:'Optional. Read only: ClassroomBoard can look at your files and can never change or delete them. Lasts about an hour.'})),
    Group(null,Row('Sign out',Btn('Sign out',async()=>{await C.signOut();ctx.re()}),{desc:'Your data stays saved online.'})),
    Group('Danger zone',Row('Sign out and clear this device',Btn('Clear',()=>sure('Sign out and remove all saved data from this device? Your account keeps it online.',async()=>{await C.signOut(true)}),'dg')),
@@ -459,9 +461,9 @@ window.__panel2=function(title,s,rows,change,save,PAL){
   win.dir=cfg.ui.lang==='en'?'ltr':'rtl';document.body.append(sc);xl(win);setTimeout(()=>xb.focus(),30);return{close,body:pg}};
 
 /* ---------- undo bar: ordinary removals happen at once and can be undone ---------- */
-let undoT;function undoBar(msg,undo){document.querySelectorAll('.s2undo').forEach(x=>x.remove());clearTimeout(undoT);
-  const t=window.__t||(x=>x);const b=h('div',{class:'s2undo',role:'status'},h('span',{},t(msg)),h('button',{onclick:()=>{b.remove();undo()}},t('Undo')));
-  if(cfg.ui.lang!=='en')b.dir='rtl';document.body.append(b);undoT=setTimeout(()=>b.remove(),7000)}
+let undoT;function undoBar(msg,undo,label){document.querySelectorAll('.s2undo').forEach(x=>x.remove());clearTimeout(undoT);
+  const t=window.__t||(x=>x);const b=h('div',{class:'s2undo',role:'status'},h('span',{},t(msg)),h('button',{onclick:()=>{b.remove();undo()}},t(label||'Undo')));
+  if(cfg.ui.lang!=='en')b.dir='rtl';document.body.append(b);undoT=setTimeout(()=>b.remove(),label?15000:7000)}
 window.__undoBar=undoBar;
 const hasS=n=>typeof S!=='undefined'&&S[n];
 const CATS=[
@@ -470,6 +472,7 @@ const CATS=[
    Group('Language',uiRows.lang(ctx),Row('Classroom wording',Seg([['en','English'],['he','עברית'],['yi','יידיש']],cfg.ui.content,v=>{setContentLang(v);ctx.re()}),{k:'contentlang',desc:'Standard wording on student screens. Your own edits are kept.'})),
    Group('Clock',Row('Show clock',Switch(k.visible,v=>{k.visible=v;u()}),{k:'clock'}),
     Row('Time format',Seg([['12','12-hour'],['24','24-hour']],k.hour12?'12':'24',v=>{k.hour12=v==='12';u();ctx.re()}),{k:'timefmt'}),
+    Row('Date under the clock',Select([['std','Today\'s date'],['heb','Hebrew date'],['both','Both'],['none','Hide']],k.date||'heb',v=>{k.date=v;u()})),
     k.hour12?Row('Show AM/PM',Switch(k.showAmPm,v=>{k.showAmPm=v;u()})):null,
     Row('Size',Slider(k.size,3,14,.2,v=>{k.size=v;u()}),{k:'clocksize'}),
     Row('Position',Select(pos4,k.pos,v=>{k.pos=v;u()}),{k:'clockpos'}),
@@ -536,5 +539,7 @@ applyUi();window.__applyUi=applyUi;
 window.scheduleEditor=d=>{schedDate=d||dayKey();openSettings2('schedule')};window.scheduleMenu=window.scheduleEditor;window.pickDup=window.pickTmpl=window.scheduleArchive=window.scheduleEditor;
 window.openSettings=openSettings2;
 if(window.__sc)window.__sc.openSettings=openSettings2;
-window.__openSettings2=openSettings2;
+
+addEventListener('load',()=>setTimeout(()=>{try{const C=window.Cloud;if(!C||!C.user||!C.guestBackupInfo)return;if(C.guestBackupInfo().count&&!sessionStorage.getItem('scGbNote')){sessionStorage.setItem('scGbNote','1');undoBar('Signed in. Your account\'s classroom was kept, and your guest setup is saved.',()=>openSettings2('account'),'Review')}}catch(e){}},5000));
+window.__openSettings2=openSettings2;window.__addStudents=()=>openSettings2('classroom','students');
 })();

@@ -58,10 +58,17 @@ function mergeGuest(snap){
           localStorage.setItem(lk,JSON.stringify(r));m[x.k]=Date.now()+1000;return}
       }catch(e){}
     }
+    try{const gb=JSON.parse(localStorage.getItem('scmeta.guestBackup')||'{}');gb[x.k]=loc;localStorage.setItem('scmeta.guestBackup',JSON.stringify(gb));localStorage.setItem('scmeta.guestBackupAt',String(Date.now()))}catch(e){}
     localStorage.removeItem(lk);delete m[x.k];
   });
   saveMeta(m);
 }
+C.guestBackupInfo=()=>{try{const gb=JSON.parse(localStorage.getItem('scmeta.guestBackup')||'{}');return{count:Object.keys(gb).length,at:+(localStorage.getItem('scmeta.guestBackupAt')||0)}}catch(e){return{count:0,at:0}}};
+C.restoreGuest=()=>{const Store=SC().Store;const gb=JSON.parse(localStorage.getItem('scmeta.guestBackup')||'{}');let n=0;
+  for(const k of Object.keys(gb)){if(k==='studentLists'){try{const cur=Store.get('studentLists',[]),add=JSON.parse(gb[k]);const have=new Set();cur.forEach(a=>(a.students||[]).forEach(x=>have.add(x.name)));add.forEach((a,i)=>{const st=(a.students||[]).filter(x=>!have.has(x.name));if(st.length)cur.push({id:'guest-'+Date.now()+i,name:'Guest list',students:st})});Store.set(k,cur);n++}catch(e){}continue}
+    try{Store.set(k,JSON.parse(gb[k]));n++}catch(e){}}
+  localStorage.removeItem('scmeta.guestBackup');localStorage.removeItem('scmeta.guestBackupAt');return n};
+C.discardGuestBackup=()=>{localStorage.removeItem('scmeta.guestBackup');localStorage.removeItem('scmeta.guestBackupAt')};
 function startSync(){
   if(C.unsub)C.unsub();
   const Store=SC().Store;
