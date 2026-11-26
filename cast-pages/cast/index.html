@@ -1,0 +1,39 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>ClassroomBoard Cast: share your screen</title><style>*{box-sizing:border-box}body{margin:0;font:18px -apple-system,system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;display:flex;align-items:center;justify-content:center}.c{background:#fff;border-radius:22px;box-shadow:0 8px 40px #0002;padding:32px;max-width:520px;width:92%;text-align:center}h1{font-size:26px;margin:0 0 6px}p{color:#555;margin:8px 0}input{font:600 38px monospace;letter-spacing:.3em;text-align:center;width:100%;border:2px solid #ccd;border-radius:14px;padding:10px}button{font:inherit;font-weight:600;border:0;border-radius:14px;padding:14px 22px;margin:6px;background:#0a7aff;color:#fff;cursor:pointer}button.g{background:#e8e8ed;color:#1d1d1f}button.r{background:#d92d20}.s{font-size:16px;color:#666;margin-top:12px;min-height:22px}.big{font:700 72px monospace;letter-spacing:.15em}</style></head><body>
+<div class="c" id="a"><h1>Share your screen to the board</h1><p>Type the 6-digit code shown on the classroom board.</p>
+<input id="code" inputmode="numeric" maxlength="6" placeholder="······" autocomplete="off">
+<div><button id="go">Share my screen</button></div>
+<p class="s" id="st"></p><p style="font-size:14px">Your browser will ask which screen, window or tab to share. Video goes straight to the board when possible. Nothing is recorded or stored.</p></div>
+<div class="c" id="b" style="display:none"><h1 id="bt">Connecting…</h1><p id="bs"></p>
+<div><button class="g" id="pause">Pause</button><button class="r" id="stop">Stop sharing</button></div>
+<label style="font-size:15px">Quality <select id="q"><option value="2500000">Auto (sharp)</option><option value="1200000">Light (slow network)</option><option value="5000000">Very sharp</option></select></label>
+<p class="s" id="mon"></p></div>
+<script src="../cast-lib/sig.js"></script><script>
+const $=i=>document.getElementById(i);let pc,code,stream,sender,timer,paused=false,lastB=0,lastT=0,total=0;
+const CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const q=new URLSearchParams(location.search).get('c');if(q&&/^\d{6}$/.test(q))$('code').value=q;
+function err(m){$('st').textContent=m}
+function gathered(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();p.onicegatheringstatechange=()=>p.iceGatheringState==='complete'&&r();setTimeout(r,4000)})}
+const enc=d=>btoa(unescape(encodeURIComponent(JSON.stringify(d))));const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s))));
+function setQ(){if(!sender)return;const p=sender.getParameters();p.encodings=p.encodings&&p.encodings.length?p.encodings:[{}];p.encodings[0].maxBitrate=+$('q').value;p.degradationPreference='maintain-resolution';sender.setParameters(p).catch(()=>{})}
+$('q').onchange=setQ;
+$('go').onclick=async()=>{
+ code=$('code').value.trim();if(!/^\d{6}$/.test(code))return err('Type the 6 digits from the board.');
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)return err('This device or browser cannot share its screen. Use Chrome, Edge or Firefox on a computer.');
+ try{stream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:{ideal:15,max:30}},audio:false})}catch(e){return err('Screen sharing was cancelled.')}
+ stream.getVideoTracks()[0].contentHint='detail';
+ err('Looking for the board…');
+ try{const d=await CastSig.read(code);if(!d){stream.getTracks().forEach(t=>t.stop());return err('That code was not found or has expired. Check the board.')}
+  pc=new RTCPeerConnection(CFG);await pc.setRemoteDescription(dec(d.offer));
+  const tr=pc.getTransceivers().find(t=>t.receiver.track.kind==='video');tr.direction='sendonly';await tr.sender.replaceTrack(stream.getVideoTracks()[0]);sender=tr.sender;setQ();
+  await pc.setLocalDescription(await pc.createAnswer());await gathered(pc);
+  await CastSig.answer(code,enc(pc.localDescription),(navigator.userAgentData&&navigator.userAgentData.platform||navigator.platform||'Computer').slice(0,40));
+ }catch(e){stream.getTracks().forEach(t=>t.stop());return err('Could not connect: '+(e.code||e.message))}
+ $('a').style.display='none';$('b').style.display='';$('bt').textContent='Waiting for the board to allow it…';
+ pc.onconnectionstatechange=()=>{const s=pc.connectionState;if(s==='connected'){$('bt').textContent='Sharing to the board';$('bs').textContent='';monitor()}else if(s==='failed'){$('bt').textContent='Could not connect directly';$('bs').textContent='This network blocks direct connections. A relay is not set up yet.'}else if(s==='disconnected'||s==='closed'){$('bt').textContent='Disconnected'}};
+ stream.getVideoTracks()[0].onended=stop;
+ setTimeout(()=>{if(pc&&pc.connectionState!=='connected'&&pc.connectionState!=='failed')$('bs').textContent='Still waiting. On the board, tap Allow.'},20000)};
+function monitor(){clearInterval(timer);timer=setInterval(async()=>{if(!pc)return;const st=await pc.getStats();st.forEach(r=>{if(r.type==='outbound-rtp'&&r.kind==='video'){const t=r.timestamp,b=r.bytesSent;if(lastT){const kbps=Math.round((b-lastB)*8/(t-lastT));$('mon').textContent=Math.round(r.frameWidth||0)+'x'+Math.round(r.frameHeight||0)+' · '+kbps+' kbps · '+(b/1048576).toFixed(0)+' MB sent'+(r.qualityLimitationReason&&r.qualityLimitationReason!=='none'?' · quality reduced: '+r.qualityLimitationReason:'')}lastB=b;lastT=t}})},2000)}
+$('pause').onclick=async()=>{paused=!paused;await sender.replaceTrack(paused?null:stream.getVideoTracks()[0]);$('pause').textContent=paused?'Resume':'Pause'};
+function stop(){clearInterval(timer);if(stream)stream.getTracks().forEach(t=>t.stop());if(pc)pc.close();pc=null;CastSig.end(code);$('b').style.display='none';$('a').style.display='';err('Sharing stopped.')}
+$('stop').onclick=stop;
+</script></body></html>
