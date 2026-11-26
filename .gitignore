@@ -1,0 +1,8 @@
+node_modules/
+config.local.json
+.firebase/
+*.log
+*.token
+.env*
+app/cloud.js
+dist/

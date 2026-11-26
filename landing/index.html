@@ -1,0 +1,164 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ClassroomBoard: Everything you need to teach. One beautiful screen.</title>
+<meta name="description" content="A free classroom screen for your smart board: timer, whiteboard, schedule, supplies, name picker, behavior and stars. Try it with no account.">
+<link rel="icon" href="img/icon.svg"><style>
+*{box-sizing:border-box;margin:0}html{scroll-behavior:smooth}
+body{background:#0b1020;color:#e9ecf6;font:17px/1.6 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}.w{max-width:1160px;margin:0 auto;padding:0 24px}
+nav{position:sticky;top:0;z-index:20;background:rgba(11,16,32,.82);backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.06)}
+nav .w{display:flex;align-items:center;height:64px;gap:20px}.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:19px;margin-right:auto}
+.logo i{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,#7c6cff,#4aa8ff);display:grid;place-items:center;font-style:normal}
+nav a.l{color:#b8bfd6;font-size:15px}nav a.l:hover{color:#fff}
+.btn{white-space:nowrap;display:inline-block;border:0;cursor:pointer;font:600 16px inherit;font-family:inherit;padding:13px 24px;border-radius:12px;background:#6d5efc;color:#fff;transition:.15s}.btn:hover{background:#8174ff;transform:translateY(-1px)}
+.btn.g{background:transparent;border:1px solid rgba(255,255,255,.22)}.btn.g:hover{background:rgba(255,255,255,.07)}.btn.s{padding:9px 16px;font-size:14px}
+.hero{padding:72px 0 40px}.hero .w{display:grid;grid-template-columns:1fr 1.25fr;gap:44px;align-items:center}
+h1{font-size:clamp(34px,4.6vw,58px);line-height:1.06;letter-spacing:-.02em;font-weight:800}h1 em{font-style:normal;background:linear-gradient(90deg,#9d92ff,#5fb8ff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero p.sub{color:#b8bfd6;margin:20px 0 28px;font-size:19px}.hero .cta{display:flex;gap:12px;flex-wrap:wrap}.hero small{display:block;margin-top:16px;color:#8c94b0;font-size:14px}
+.prev{position:relative}.frame{position:relative;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.1)}
+.frame iframe{position:absolute;left:0;top:0;width:1280px;height:720px;border:0;transform-origin:0 0}
+.prev .bar{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;align-items:center}.chip{background:rgba(255,255,255,.07);color:#cfd5ea;border:0;font:500 14px inherit;font-family:inherit;padding:7px 14px;border-radius:99px;cursor:pointer}.chip:hover,.chip.on{background:#6d5efc;color:#fff}
+.prev .bar .btn{margin-left:auto}
+section{padding:84px 0}h2{font-size:clamp(28px,3.4vw,42px);line-height:1.12;letter-spacing:-.015em;font-weight:800}
+.lead{color:#b8bfd6;max-width:640px;margin-top:14px}
+.one{text-align:center}.one .lead{margin:14px auto 0}
+.merge{display:flex;align-items:center;justify-content:center;gap:28px;margin-top:44px;flex-wrap:wrap}
+.tools{display:grid;grid-template-columns:repeat(2,auto);gap:10px}.tools span{padding:10px 16px;border-radius:10px;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.18);color:#9aa2bd;font-size:14px}
+.arrow{font-size:34px;color:#8174ff}.merge .frame{width:min(460px,100%)}
+.feat{display:grid;grid-template-columns:1fr 1.15fr;gap:56px;align-items:center}.feat.r{grid-template-columns:1.15fr 1fr}.feat.r .txt{order:2}
+.feat .txt p{color:#b8bfd6;margin-top:14px}.feat .txt ul{list-style:none;padding:0;margin-top:16px;color:#cfd5ea;font-size:16px}.feat li{padding:4px 0 4px 24px;position:relative}.feat li:before{content:"";position:absolute;left:0;top:13px;width:10px;height:10px;border-radius:50%;background:#6d5efc}
+.feat .btn{margin-top:22px}.poster{cursor:pointer}.poster img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.poster:after{content:"Try it live";position:absolute;right:14px;bottom:14px;background:#6d5efc;color:#fff;font:600 14px inherit;font-family:inherit;padding:8px 14px;border-radius:99px;box-shadow:0 4px 16px rgba(0,0,0,.4)}
+.alt{background:#0e1428}.phone{width:300px;height:620px;border-radius:40px;border:9px solid #1d2440;background:#000;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);position:relative}.phone iframe{width:100%;height:100%;border:0}
+.demo2{background:#fff;border-radius:16px;padding:28px;color:#222;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+.demo2 h4{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:#888;margin-bottom:14px}
+.row{display:flex;align-items:center;gap:14px;padding:8px 0;border-bottom:1px solid #eee}.row:last-child{border:0}.row b{flex:1;font-weight:600}
+.dot{width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;background:#5fcf8a;box-shadow:inset 0 -3px 5px rgba(0,0,0,.15);transition:.15s}.dot:active{transform:scale(.9)}
+.star{position:relative;width:38px;height:38px;border:0;background:none;cursor:pointer;padding:0}.star svg{width:38px;height:38px}.star span{position:absolute;inset:0;display:grid;place-items:center;font:700 13px inherit;font-family:inherit;color:#444;padding-top:3px}
+.star.pop{animation:pop .45s}@keyframes pop{40%{transform:scale(1.35) rotate(12deg)}}
+.hint{font-size:13px;color:#888;margin-top:12px}
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:48px}.step b{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:rgba(109,94,252,.2);color:#b4abff;font-size:19px;margin-bottom:16px}.step h3{font-size:19px;margin-bottom:6px}.step p{color:#9aa2bd;font-size:15px}
+.real{display:grid;grid-template-columns:repeat(3,1fr);gap:34px;margin-top:40px}.real h3{font-size:18px;margin-bottom:6px}.real p{color:#9aa2bd;font-size:15px}
+.cmp{width:100%;max-width:720px;margin-top:34px;border-collapse:collapse}.cmp td,.cmp th{padding:14px 10px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:16px}.cmp th{color:#8c94b0;font-weight:600;font-size:14px}.cmp td+td,.cmp th+th{text-align:center;width:150px}.y{color:#7ee0a3}.n{color:#5b637e}
+.final{text-align:center;padding:110px 0;background:radial-gradient(ellipse at 50% 0,rgba(109,94,252,.25),transparent 60%)}.final .cta{display:flex;gap:12px;justify-content:center;margin-top:28px;flex-wrap:wrap}
+footer{padding:34px 0;color:#6f7794;font-size:14px;text-align:center;border-top:1px solid rgba(255,255,255,.06)}
+.acct{display:none;align-items:center;gap:10px}.acct .av{width:32px;height:32px;border-radius:50%;background:#6d5efc;display:grid;place-items:center;font-weight:700;font-size:14px}
+@media(max-width:860px){.hero .w,.feat,.feat.r{grid-template-columns:1fr;gap:28px}.feat.r .txt{order:0}.steps{grid-template-columns:1fr 1fr}.real{grid-template-columns:1fr}nav a.l.h{display:none}.hero{padding-top:40px}section{padding:56px 0}.prev .bar .btn{margin-left:0}}
+@media(max-width:480px){.logo{font-size:16px}.logo i{width:26px;height:26px}nav a.l{font-size:14px}.steps{grid-template-columns:1fr}nav .w{gap:12px}.btn.s{padding:8px 12px}}
+
+/* light theme */
+body{background:#fbfbfd;color:#1b2030}
+nav{background:rgba(251,251,253,.86);border-bottom:1px solid rgba(20,30,60,.08)}
+nav a.l{color:#5a6279}nav a.l:hover{color:#111}
+.btn.g{border:1px solid rgba(20,30,60,.22);color:#1b2030}.btn.g:hover{background:rgba(20,30,60,.05)}
+h1 em{background:linear-gradient(90deg,#5a49f0,#2f8ff0);-webkit-background-clip:text;background-clip:text}
+.hero p.sub,.lead,.feat .txt p{color:#4f576d}.hero small{color:#767e95}
+.frame{background:#e9ecf4;box-shadow:0 24px 60px rgba(30,40,80,.18),0 0 0 1px rgba(20,30,60,.08)}
+.chip{background:rgba(20,30,60,.06);color:#39415a}.chip:hover,.chip.on{background:#6d5efc;color:#fff}
+.prev .bar span{color:#767e95!important}
+.tools span{background:#fff;border:1px dashed rgba(20,30,60,.22);color:#5a6279}
+.feat .txt ul{color:#39415a}
+.alt{background:#f2f4fa}
+.phone{border-color:#cfd5e6;box-shadow:0 24px 60px rgba(30,40,80,.2)}
+.demo2{box-shadow:0 24px 60px rgba(30,40,80,.15);border:1px solid rgba(20,30,60,.06)}
+.step b{background:rgba(109,94,252,.12);color:#5a49f0}.step p,.real p{color:#59617a}
+.cmp td,.cmp th{border-bottom:1px solid rgba(20,30,60,.1)}.cmp th{color:#767e95}.y{color:#1f9d57}.n{color:#a0a7bd}
+.final{background:radial-gradient(ellipse at 50% 0,rgba(109,94,252,.14),transparent 60%)}
+footer{color:#767e95;border-top:1px solid rgba(20,30,60,.08)}
+</style></head><body>
+<nav><div class="w"><a class="logo" href="./"><i>▦</i>ClassroomBoard</a>
+<a class="l h" href="#features">Features</a><a class="l h" href="#how">How it works</a>
+<a class="l" id="login" href="app/?login=1">Log in</a>
+<span class="acct" id="acct"><span class="av" id="av">?</span><a class="btn s" href="app/">Open Classroom</a></span>
+<a class="btn s" id="tryNav" href="app/?guest=1" data-try>Try for free</a></div></nav>
+
+<header class="hero"><div class="w"><div>
+<h1>Everything you need to teach. <em>One beautiful screen.</em></h1>
+<p class="sub">Timer, whiteboard, schedule, supplies, name picker, behavior and stars, together on one calm classroom screen for your smart board or any browser.</p>
+<div class="cta"><a class="btn" href="app/?guest=1" data-try>Try for Free</a><a class="btn g" href="#how">See How It Works</a></div>
+<small>No account required. Log in whenever you're ready to save your work.</small></div>
+<div class="prev"><div class="frame" id="hero"><iframe title="ClassroomBoard preview" loading="eager" src="app/?demo=timer"></iframe></div>
+<div class="bar"><span style="color:#8c94b0;font-size:14px">Tap to explore:</span>
+<button class="chip on" data-d="timer">Timer</button><button class="chip" data-d="schedule">Schedule</button><button class="chip" data-d="supplies">Supplies</button><button class="chip" data-d="picker">Picker</button><button class="chip" data-d="behavior">Behavior</button><button class="chip" data-d="whiteboard">Whiteboard</button>
+<a class="btn s" href="app/?guest=1" data-try>Try the Full Classroom</a></div></div></div></header>
+
+<section class="one"><div class="w"><h2>Less time managing technology.<br>More time teaching.</h2>
+<p class="lead">Stop opening a timer in one tab, a slideshow in another and a spreadsheet for the class list. Keep it all on one screen.</p>
+<div class="merge"><div class="tools"><span>Timer app</span><span>Whiteboard</span><span>Class list</span><span>Schedule doc</span><span>Name picker</span><span>Behavior chart</span></div><div class="arrow">→</div>
+<div class="frame poster"><img src="img/home.jpg" alt="ClassroomBoard screen"></div></div></div></section>
+
+<section id="features" class="alt"><div class="w">
+<div class="feat"><div class="txt"><h2>Teach naturally. Write freely.</h2><p>A full-screen whiteboard made for touch. Write with your finger or a pen and switch colors in a tap.</p><ul><li>Pens, highlighter and eraser</li><li>Several boards per lesson</li></ul></div>
+<div class="frame poster" data-d="whiteboard"><img src="img/whiteboard.jpg" alt="Whiteboard"></div></div></div></section>
+
+<section><div class="w"><div class="feat r"><div class="txt"><h2>All your lessons, together.</h2><p>Connect a Google Drive folder and open your PDFs and slides without leaving the classroom screen.</p><ul><li>Paste a folder link, or browse your Drive</li><li>Your files stay in your own Drive</li></ul></div>
+<div class="frame poster" data-d="settings"><img src="img/settings.jpg" alt="Settings"></div></div></div></section>
+
+<section class="alt"><div class="w"><div class="feat"><div class="txt"><h2>Give your classroom a clear routine.</h2><p>Put the day's schedule on screen, with the current lesson highlighted so everyone knows what comes next.</p></div>
+<div class="frame poster" data-d="schedule"><img src="img/schedule.jpg" alt="Schedule"></div></div></div></section>
+
+<section><div class="w"><div class="feat r"><div class="txt"><h2>Make every minute count.</h2><p>A big, friendly timer with quick presets. Set it, start it, and the whole room can see the time left.</p></div>
+<div class="frame poster" data-d="timer"><img src="img/timer.jpg" alt="Timer"></div></div></div></section>
+
+<section class="alt"><div class="w"><div class="feat"><div class="txt"><h2>Everyone ready for the next lesson.</h2><p>Show which supplies to bring out, set separately for each period of the day.</p></div>
+<div class="frame poster" data-d="supplies"><img src="img/supplies.jpg" alt="Supplies"></div></div></div></section>
+
+<section><div class="w"><div class="feat r"><div class="txt"><h2>Give everyone a chance.</h2><p>Pick a student at random, or spin a prize wheel. Fair, quick and fun.</p></div>
+<div class="frame poster" data-d="picker"><img src="img/picker.jpg" alt="Name picker"></div></div></div></section>
+
+<section class="alt"><div class="w"><div class="feat"><div class="txt"><h2>Encourage positive progress.</h2><p>Tap a dot to move a student between green, yellow, orange and red. Tap a star to add to their count. Try it here, with sample names.</p></div>
+<div class="demo2"><h4>Behavior &amp; stars (sample class)</h4><div id="beh"></div><p class="hint">Tap a dot or a star. Nothing here is saved.</p></div></div></div></section>
+
+<section><div class="w"><div class="feat r"><div class="txt"><h2>Your classroom. Your way.</h2><p>Choose a background, set the clock and date, pick which tools live on your toolbar, and add your own students.</p><ul><li>Photo backgrounds or a plain color</li><li>Clock and date (Hebrew or English)</li><li>Your own class lists</li></ul></div>
+<div class="frame poster" data-d="settings"><img src="img/settings.jpg" alt="Settings"></div></div></div></section>
+
+<section id="how" class="alt"><div class="w"><h2>How it works</h2><div class="steps">
+<div class="step"><b>1</b><h3>Open your classroom</h3><p>One tap. No sign-up needed.</p></div>
+<div class="step"><b>2</b><h3>Explore your tools</h3><p>Timer, whiteboard, schedule, picker and more.</p></div>
+<div class="step"><b>3</b><h3>Make it your own</h3><p>Add students, pick a background, set your day.</p></div>
+<div class="step"><b>4</b><h3>Save your classroom</h3><p>Log in with Google or email to keep your work on every device.</p></div></div></div></section>
+
+<section><div class="w"><h2>Designed for real teachers</h2><div class="real">
+<div><h3>Built for the board</h3><p>Large touch targets and a clean screen that reads from the back of the room.</p></div>
+<div><h3>Works on a phone, too</h3><p>Mark behavior or adjust your setup from your pocket.</p></div>
+<div><h3>Your work, your account</h3><p>Sign in to keep your lists and settings. Guest work you did first comes with you.</p></div></div></div></section>
+
+<section class="alt"><div class="w"><h2>Guest or signed in</h2>
+<table class="cmp"><tr><th></th><th>Guest</th><th>Signed in</th></tr>
+<tr><td>All classroom tools</td><td class="y">✓</td><td class="y">✓</td></tr>
+<tr><td>No account needed</td><td class="y">✓</td><td class="n">–</td></tr>
+<tr><td>Work saved on this device</td><td class="y">✓</td><td class="y">✓</td></tr>
+<tr><td>Saved to your account</td><td class="n">–</td><td class="y">✓</td></tr>
+<tr><td>Same classroom on every device</td><td class="n">–</td><td class="y">✓</td></tr></table></div></section>
+
+<section class="alt" id="phone"><div class="w"><div class="feat"><div class="txt"><h2>And on your phone.</h2><p>Mark behavior and stars, or change your setup, from your pocket. Same classroom, a screen made for your hand.</p><ul><li>Tap a dot or a star to mark a student</li><li>Open the same link on the board and the phone</li></ul><a class="btn" href="app/?guest=1" data-try>Try for Free</a></div>
+<div style="display:flex;justify-content:center"><div class="phone"><iframe title="Phone view" loading="lazy" src="app/?demo=home&view=mark"></iframe></div></div></div></div></section>
+
+<section class="final"><div class="w"><h2>Your next lesson starts here.</h2><div class="cta"><a class="btn" href="app/?guest=1" data-try>Try ClassroomBoard for Free</a><a class="btn g" href="app/?login=1" id="login2">Log in to your classroom</a></div></div></section>
+<footer>ClassroomBoard · free for teachers</footer>
+
+<script>
+(function(){
+var L=location,Q=new URLSearchParams(L.search),ls=window.localStorage;
+// old bookmarks (phone, board, marking links) go straight to the app
+if(Q.has('view')){L.replace('app/'+L.search);return}
+// returning users go to their classroom
+try{if(!Q.has('landing')&&(ls.getItem('scmeta.uid')||ls.getItem('sc.cfg'))){L.replace('app/'+L.search);return}}catch(e){}
+if(navigator.serviceWorker)navigator.serviceWorker.getRegistrations().then(function(r){r.forEach(function(x){if(x.scope.replace(/\/$/,'')===L.origin)x.unregister()})}).catch(function(){});
+var em=ls.getItem('scmeta.email');if(ls.getItem('scmeta.uid')||em){document.getElementById('acct').style.display='flex';document.getElementById('login').style.display='none';document.getElementById('av').textContent=(em||'A')[0].toUpperCase()}
+document.querySelectorAll('[data-try]').forEach(function(a){a.addEventListener('click',function(){try{ls.setItem('scmeta.welcomed','1')}catch(e){}})});
+// scale iframes
+function fit(f){var c=f.parentNode,s=c.clientWidth/1280;f.style.transform='scale('+s+')'}
+function fitAll(){document.querySelectorAll('.frame iframe').forEach(fit)}addEventListener('resize',fitAll);
+var hero=document.querySelector('#hero iframe');fit(hero);
+document.querySelectorAll('.chip').forEach(function(c){c.onclick=function(){document.querySelectorAll('.chip').forEach(function(x){x.classList.remove('on')});c.classList.add('on');hero.src='app/?demo='+c.dataset.d}});
+document.querySelectorAll('.poster[data-d]').forEach(function(p){p.addEventListener('click',function(){var f=document.createElement('iframe');f.title='Live preview';f.src='app/?demo='+p.dataset.d;p.appendChild(f);p.classList.remove('poster');p.querySelector('img').remove();fit(f)},{once:true})});
+// behavior demo
+var names=['Avi','Bracha','Chaim','Dina','Eli','Faigy'],cols=['#5fcf8a','#f4cf3d','#f39a3d','#ee5b5b'],st={},sc={},box=document.getElementById('beh');
+var gold=['#fff','#f4cf3d','#c4cad4','#e8a900'];
+function starSvg(n){var f=n==0?'none':n<3?'#f4cf3d':n<6?'#c4cad4':'#e8b100',s=n==0?'#a9b0bf':'rgba(0,0,0,.25)';return '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z" fill="'+f+'" stroke="'+s+'" stroke-width="1.4" stroke-linejoin="round"/></svg>'}
+function draw(){box.innerHTML='';names.forEach(function(n){var r=document.createElement('div');r.className='row';var d=document.createElement('button');d.className='dot';d.style.background=cols[st[n]||0];d.setAttribute('aria-label',n+' behavior');d.onclick=function(){st[n]=((st[n]||0)+1)%4;draw()};
+var s=document.createElement('button');s.className='star';s.setAttribute('aria-label',n+' stars');s.innerHTML=starSvg(sc[n]||0)+'<span>'+(sc[n]||0)+'</span>';s.onclick=function(){sc[n]=(sc[n]||0)+1;draw();var q=box.querySelectorAll('.star')[names.indexOf(n)];q.classList.add('pop');q.insertAdjacentHTML('beforeend','<b style="position:absolute;right:-6px;top:-8px;font-size:15px">✨</b>')};
+var b=document.createElement('b');b.textContent=n;r.append(d,b,s);box.appendChild(r)})}
+draw();
+})();
+</script></body></html>
