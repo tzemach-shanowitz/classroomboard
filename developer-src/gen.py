@@ -4,9 +4,10 @@ os.makedirs(OUT,exist_ok=True)
 REPO='https://github.com/tzemach-shanowitz/classroomboard'
 SITE='https://classroomboard.web.app'
 NOW=datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-VERSION="v153"
+VERSION="v154"
 mission="Make ClassroomBoard exceptionally simple, beautiful, immediately understandable, useful to as many teachers as possible, accessible, reliable and trustworthy, easy to personalize, and easy to share."
 releases=[
+ ("v154","2026-11-26","Sound level: much less sensitive. The whole range moved down (the old lowest is now the highest), and the needle moves smoother and slower.",),
  ("v153","2026-11-26","Web page: sites that cannot be shown inside the app now show an Open in a new tab button. A new-tab button sits next to Go.",),
  ("v152","2026-11-26","Supplies settings: Save and Close buttons at the top.",),
  ("v151","2026-11-26","Timer: a tick each second for the last 10 seconds, yellow flashing then, red flashing when finished. The finished text is gone.",),

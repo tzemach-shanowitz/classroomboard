@@ -100,7 +100,7 @@ function sound(){
         const loop=()=>{an.getByteTimeDomainData(buf);let q=0;for(const x of buf){const d=(x-128)/128;q+=d*d}const rms=Math.sqrt(q/buf.length);
           if(calib){calib=false;calEnd=Date.now()+3000;cal0=0;calN=0}
           if(calEnd){cal0+=rms;calN++;if(Date.now()>calEnd){s.floor=cal0/calN;sv();calEnd=0;toast('Calibrated')}}
-          const gain=4+s.sens*.8;let v=Math.min(100,Math.max(0,(rms-(s.floor||0))*gain*100/3));sm=v>sm?sm*.5+v*.5:sm*.92+v*.08;
+          const gain=3+s.sens*.1;let v=Math.min(100,Math.max(0,(rms-(s.floor||0))*gain*100/3));sm=v>sm?sm*.82+v*.18:sm*.96+v*.04;
           draw(sm);const over=sm>s.max;if(over){overSince=overSince||Date.now();if(s.warn&&Date.now()-overSince>1200&&Date.now()-warnAt>5000){warnAt=Date.now();try{Audio_.unlock();Audio_.play('chime',.5,1)}catch(e){}}}else overSince=0;
           raf=requestAnimationFrame(loop)};loop()}
       catch(e){const n=e&&e.name;msg.innerHTML='';msg.append(n==='NotAllowedError'?'The microphone is blocked. Allow it for this site in the browser, then ':'No microphone found, or it is in use. ',h('button',{class:'pill',onclick:()=>{stop();begin()}},'Try again'))}};
