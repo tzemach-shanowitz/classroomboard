@@ -20,7 +20,7 @@ jobs:
       - name: Syntax check
         run: for f in app/*.js; do node --check "$f" || exit 1; done
       - name: Install build tools
-        run: npm install --no-save --no-package-lock esbuild@0.28.2
+        run: npm install --no-save --no-package-lock esbuild@0.28.2 firebase@13.4.0 qrcode@1.5.4
       - name: Build both hosting folders
         env:
           CONFIG_LOCAL_JSON: ${{ secrets.CONFIG_LOCAL_JSON }}
