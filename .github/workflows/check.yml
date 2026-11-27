@@ -1,0 +1,25 @@
+name: Check
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax check every app script
+        run: for f in app/*.js; do node --check "$f" || exit 1; done
+      - name: No secrets or personal values in the repo
+        run: |
+          if grep -rInE "AIzaSy[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z]{20,}|github_pat_[0-9A-Za-z_]{20,}|-----BEGIN (RSA |EC )?PRIVATE KEY|\"private_key\"" . --exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.github; then
+            echo "Possible secret found"; exit 1
+          fi
+      - name: Build check
+        env:
+          CONFIG_LOCAL_JSON: '{"firebase":{"apiKey":"TEST","authDomain":"x","projectId":"x","storageBucket":"x","messagingSenderId":"1","appId":"1"},"driveApiKey":"","sharedFolderIds":[]}'
+        run: |
+          npm install --no-save --no-package-lock esbuild@0.28.2
+          node tools/build-dist.mjs dist

@@ -1,0 +1,45 @@
+name: Deploy
+# Publishes to Firebase Hosting when a pull request is merged into main.
+# Secrets live in the "production" environment, which only the main branch can use,
+# so pull request branches never see them.
+on:
+  push:
+    branches: [main]
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax check
+        run: for f in app/*.js; do node --check "$f" || exit 1; done
+      - name: Install build tools
+        run: npm install --no-save --no-package-lock esbuild@0.28.2
+      - name: Build both hosting folders
+        env:
+          CONFIG_LOCAL_JSON: ${{ secrets.CONFIG_LOCAL_JSON }}
+          PERSONAL_JSON: ${{ secrets.PERSONAL_JSON }}
+        run: |
+          node tools/build-dist.mjs dist
+          mv dist/legacy public
+          mv dist/cb public-cb
+      - name: Keep the generated /review/ folder from the live site
+        run: |
+          mkdir -p /tmp/rv && cd /tmp/rv
+          wget -q -r -np -nH -R "index.html?*" https://classroomboard.web.app/review/ || true
+          wget -q https://classroomboard.web.app/review/manifest.json -O review/manifest.json || true
+          if [ -f review/index.html ]; then cp -r review "$GITHUB_WORKSPACE/public-cb/review"; else echo "no live review folder found, skipping"; fi
+      - name: Deploy to Firebase Hosting
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx -y firebase-tools@15 deploy --only hosting --project my-smart-classroom-fe1ad --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"
