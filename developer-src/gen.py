@@ -4,9 +4,10 @@ os.makedirs(OUT,exist_ok=True)
 REPO='https://github.com/tzemach-shanowitz/classroomboard'
 SITE='https://classroomboard.web.app'
 NOW=datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')
-VERSION="v155"
+VERSION="v156"
 mission="Make ClassroomBoard exceptionally simple, beautiful, immediately understandable, useful to as many teachers as possible, accessible, reliable and trustworthy, easy to personalize, and easy to share."
 releases=[
+ ("v156","2026-11-27","Ask the Board: a button on the bottom bar. Type or speak a change in plain English (bigger timer, move it top left, slides first, calmer background, undo) and see it right away. Save as my default keeps it. Running timers and open documents are not interrupted. The AI service is off for now; this version understands common requests on its own.",),
  ("v155","2026-11-26","Whiteboard: erase with the flat of your hand or fist (a wide touch erases, wider hand = bigger eraser). Pen eraser end or side button also erases. Fingertip and pen still write. No settings needed.",),
  ("v154","2026-11-26","Sound level: much less sensitive. The whole range moved down (the old lowest is now the highest), and the needle moves smoother and slower.",),
  ("v153","2026-11-26","Web page: sites that cannot be shown inside the app now show an Open in a new tab button. A new-tab button sits next to Go.",),
