@@ -114,8 +114,8 @@ html[data-theme=dark] .s2dlg>div{background:#2a2a2d;color:#f5f5f7}html[data-them
 .s2sheet .s2leg .lbl,.s2sheet .s2leg .row{margin:6px 8px}
 @media(max-width:760px){.s2.s2sheet{width:calc(100vw / var(--z,1));height:auto;max-height:calc(92dvh / var(--z,1));border-radius:18px 18px 0 0;align-self:end}.s2scrim.sh{align-items:end}}
 .s2qr{display:flex;justify-content:center;margin:14px 0}.s2qr img{width:200px;height:200px;background:#fff;border-radius:12px;padding:8px;border:1px solid var(--bd)}
-.s2undo{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);z-index:99;display:flex;align-items:center;gap:16px;background:rgba(30,30,34,.94);color:#fff;border-radius:14px;padding:8px 8px 8px 18px;font:15px -apple-system,'Segoe UI',Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.35);animation:s2p .18s}
-.s2undo button{border:0;background:rgba(255,255,255,.16);color:#7cc4ff;border-radius:10px;height:38px;padding:0 16px;font:inherit;font-weight:600;cursor:pointer}
+.s2undo{position:fixed;left:50%;bottom:28px;max-width:calc(100vw - 24px);box-sizing:border-box;transform:translateX(-50%);z-index:99;display:flex;align-items:center;gap:16px;background:rgba(30,30,34,.94);color:#fff;border-radius:14px;padding:8px 8px 8px 18px;font:15px -apple-system,'Segoe UI',Arial,sans-serif;box-shadow:0 10px 40px rgba(0,0,0,.35);animation:s2p .18s}
+.s2undo span{min-width:0}@media(max-width:700px){.s2undo{bottom:calc(110px + env(safe-area-inset-bottom,0px));width:calc(100vw - 24px)}.s2undo span{flex:1}}.s2undo button{border:0;background:rgba(255,255,255,.16);color:#7cc4ff;border-radius:10px;height:38px;padding:0 16px;font:inherit;font-weight:600;cursor:pointer}
 /* ---- right to left ---- */
 .s2 input,.s2 textarea{unicode-bidi:plaintext}
 .s2[dir=rtl] .s2l b,.s2[dir=rtl] .s2l small,.s2[dir=rtl] .s2note{unicode-bidi:plaintext}
@@ -269,9 +269,20 @@ const SUBS={
    Note('To reset one student, tap their name on the widget.'))}},
  sched:{title:'Daily schedule',fn:(pg,ctx)=>{const date=schedDate;let sc=Store.get(SK(date),null)||{items:[]};if(pendAdd){const last=sc.items[sc.items.length-1];sc.items.push({t:last?last.t:cfg.teach.start,n:''});pendAdd=false}
   const repaint=()=>{const w=Widgets.open.schedule;if(w&&w.paint&&w.date===date)w.paint()};
-  const save=()=>{const items=sc.items.filter(i=>i.n.trim()).map(i=>({t:i.t,n:i.n})).sort((a,b)=>toMin(a.t)-toMin(b.t));Store.set(SK(date),{items});repaint()};
-  const rows=sc.items.map((it,i)=>{const r=h('div',{class:'s2row'},h('input',{class:'s2in',type:'time',value:it.t,'aria-label':'Time',onchange:e=>{it.t=e.target.value;save();sc.items.sort((a,b)=>toMin(a.t)-toMin(b.t));flash();ctx.re()}}),
-    h('input',{class:'s2in',value:it.n,dir:'auto',placeholder:'Activity','aria-label':'Activity',style:'flex:1;min-width:0',onchange:e=>{it.n=e.target.value;save();flash()}}),
+  const save=()=>{const items=sc.items.map(i=>{const o={t:i.t,n:i.n};if(i.skip)o.skip=true;return o}).sort((a,b)=>toMin(a.t)-toMin(b.t));Store.set(SK(date),{items});repaint()};
+  const rows=sc.items.map((it,i)=>{const r=h('div',{class:'s2row sch','data-i':i},h('button',{class:'s2drag',type:'button','aria-label':'Drag to reorder',title:'Drag to reorder',html:'<svg viewBox="0 0 24 24"><circle cx="9" cy="6" r="1.8"/><circle cx="15" cy="6" r="1.8"/><circle cx="9" cy="12" r="1.8"/><circle cx="15" cy="12" r="1.8"/><circle cx="9" cy="18" r="1.8"/><circle cx="15" cy="18" r="1.8"/></svg>',onpointerdown:ev=>{ev.preventDefault();const hd=ev.currentTarget,row=hd.parentNode,par=row.parentNode;const grab=ev.clientY-row.getBoundingClientRect().top;row.classList.add('dragging');
+      const mv=e=>{const sibs=[...par.querySelectorAll('.s2row[data-i]')].filter(x=>x!==row);let before=null;for(const x of sibs){const rc=x.getBoundingClientRect();if(e.clientY<rc.top+rc.height/2){before=x;break}}
+       const cur=row.nextElementSibling;if(before!==cur&&!(before===null&&!sibs.some(x=>x.compareDocumentPosition(row)&2))){if(before)par.insertBefore(row,before);else sibs[sibs.length-1].after(row)}
+       row.style.transform='';const nat=row.getBoundingClientRect().top;row.style.transform='translateY('+(e.clientY-grab-nat)+'px)'};
+      const up=()=>{document.removeEventListener('pointermove',mv);document.removeEventListener('pointerup',up);document.removeEventListener('pointercancel',up);row.style.transform='';row.classList.remove('dragging');
+       const order=[...par.querySelectorAll('.s2row[data-i]')].map(x=>sc.items[+x.dataset.i]);const slots=sc.items.map(z=>z.t).sort((x,y)=>toMin(x)-toMin(y));
+       if(order.every((z,q)=>z===sc.items[q])){ctx.re();return}
+       const old=Store.get(SK(date),{items:[]});order.forEach((z,q)=>z.t=slots[q]);sc.items=order;save();ctx.re()};
+      document.addEventListener('pointermove',mv);document.addEventListener('pointerup',up);document.addEventListener('pointercancel',up)}}),h('input',{class:'s2in',type:'time',style:'flex:1;min-width:0',value:it.t,'aria-label':'Time',onchange:e=>{it.t=e.target.value;save();sc.items.sort((a,b)=>toMin(a.t)-toMin(b.t));flash();ctx.re()}}),
+    h('input',{class:'s2in s2name',value:it.n,dir:'auto',placeholder:'Activity','aria-label':'Activity',onchange:e=>{it.n=e.target.value;save();flash()}}),
+    h('button',{class:'s2x sm','aria-label':'Add before or after',title:'Add before or after',style:'font-size:22px;line-height:1',onclick:()=>{const ins=(after)=>{const m=toMin(it.t)+(after?5:-5);const mm=Math.max(0,Math.min(1439,m));const t=String(Math.floor(mm/60)).padStart(2,'0')+':'+String(mm%60).padStart(2,'0');sc.items.push({t,n:''});save();ctx.re()};
+      const mv=(d)=>{const L=sc.items.slice().sort((x,y)=>toMin(x.t)-toMin(y.t));const k=L.indexOf(it),j=k+d;if(j<0||j>=L.length)return;const T=L.map(z=>z.t);[L[k],L[j]]=[L[j],L[k]];L.forEach((z,q)=>z.t=T[q]);sc.items=L;save();ctx.re()};
+      modal('Edit row',(b,c)=>{b.append(h('div',{class:'row'},pill('Move up',()=>{c();mv(-1)},'big')),h('div',{class:'row'},pill('Move down',()=>{c();mv(1)},'big')),h('div',{class:'row'},(typeof pill==='function')?pill('Add before',()=>{c();ins(false)},'big'):h('button',{onclick:()=>{c();ins(false)}},'Add before')),h('div',{class:'row'},(typeof pill==='function')?pill('Add after',()=>{c();ins(true)},'big'):h('button',{onclick:()=>{c();ins(true)}},'Add after')))})},html:'+'}),
     h('button',{class:'s2x sm','aria-label':'Remove',onclick:()=>{const [gone]=sc.items.splice(i,1);save();flash();ctx.re();undoBar('Activity removed',()=>{const c=Store.get(SK(date),{items:[]});c.items.push(gone);c.items.sort((a,b)=>toMin(a.t)-toMin(b.t));Store.set(SK(date),c);repaint();if(document.querySelector('.s2pg'))ctx.re()})},html:IC.x}));return r});
   pg.append(Group(null,Row('Date',h('input',{class:'s2in',type:'date',value:date,onchange:e=>{if(e.target.value){schedDate=e.target.value;ctx.re()}}}),{k:'scheddate'}),
     Row('Show on screen',Btn('Open',()=>{if(!Store.get(SK(date),null))save();ctx.close();Widgets.close('schedule');openSchedule(date)}))),
@@ -280,7 +291,9 @@ const SUBS={
    Group('Start from',Row('Example day',Btn('Insert',()=>{const old=sc.items.map(x=>({...x}));sc.items=EXAMPLE.map(([t,n])=>({t,n}));save();ctx.re();if(old.length)undoBar('Example day inserted',()=>{Store.set(SK(date),{items:old});repaint();if(document.querySelector('.s2pg'))ctx.re()})})),
     Nav('Templates',()=>ctx.push(SUBS.schedTmpl.title,SUBS.schedTmpl.fn),{k:'templates'}),
     Nav('Copy from another day',()=>ctx.push(SUBS.schedDup.title,SUBS.schedDup.fn),{k:'copyday'}),),
-   Group(null,Row('Save as template',Btn('Save',()=>ask('Template name','',n=>{if(n){save();const T=tmplList();T.push({name:n,items:sc.items.filter(i=>i.n.trim()).map(x=>({...x}))});Store.set('schedTemplates',T);toast('Template saved')}}))),
+   Group('Regular schedule',Row('Regular '+new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'})+'s',Btn('Use this day',()=>{const W=Store.get('schedWeek',{});const dw=new Date(date+'T12:00:00').getDay();W[dw]=sc.items.map(i=>({t:i.t,n:i.n}));Store.set('schedWeek',W);toast('Saved. Every '+new Date(date+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'})+' will start with this schedule.')}),{desc:'New days start from the regular schedule for that weekday. Edits or skips on one day do not change it.'}),
+    Row('Reset this day to regular',Btn('Reset',()=>{const W=Store.get('schedWeek',{});const dw=new Date(date+'T12:00:00').getDay();if(!W[dw]){toast('No regular schedule saved for this weekday yet');return}const old=Store.get(SK(date),null);Store.set(SK(date),{items:W[dw].map(i=>({...i}))});repaint();ctx.re();undoBar('Reset to regular',()=>{if(old)Store.set(SK(date),old);repaint();if(document.querySelector('.s2pg'))ctx.re()})}))),
+   Group(null,Row('Save as template',Btn('Save',()=>ask('Template name','',n=>{if(n){save();const T=tmplList();T.push({name:n,items:sc.items.map(x=>({...x}))});Store.set('schedTemplates',T);toast('Template saved')}}))),
     Row('Delete this day',Btn('Delete',()=>{const old=Store.get(SK(date),null);Store.del(SK(date));Widgets.close('schedule');ctx.re();undoBar('Schedule deleted',()=>{if(old)Store.set(SK(date),old);if(document.querySelector('.s2pg'))ctx.re()})},'dg'))),
    Note('Each activity runs until the next one starts. End with a closing row such as סיום. Changes save automatically.'))}},
  schedTmpl:{title:'Templates',fn:(pg,ctx)=>{const T=tmplList();
@@ -315,7 +328,8 @@ const SUBS={
    return}
   const stTxt={'signed-out':'Not signed in','syncing':'Saving…','ok':'Saved online','warn':'Saved online, with a warning','error':'Problem saving online'}[C.status]||C.status;
   pg.append(Group(null,Row('Signed in as',null,{val:u.email||u.displayName}),Row('Status',null,{val:stTxt+(C.lastSync?' · '+new Date(C.lastSync).toLocaleTimeString([], {hour:'numeric',minute:'2-digit'}):''),desc:C.msg||''}),Row('Save now',Btn('Save now',async()=>{await C.flush();toast('Saved');ctx.re()}))),
-   (C.guestBackupInfo&&C.guestBackupInfo().count)?Group('Guest setup',Row('From before you signed in',h('div',{style:'display:flex;gap:8px'},Btn('Restore',()=>sure('Bring back your guest settings? They will replace the same settings in your account. Class lists are added, not replaced.',()=>{const n=C.restoreGuest();toast('Restored');ctx.re()})),Btn('Dismiss',()=>{C.discardGuestBackup();ctx.re()})),{desc:'Your account\'s classroom was kept as it was. Your guest version is saved on this device so nothing is lost.'})):null,
+   (window.__savedVersions&&window.__savedVersions.list().length)?Group('Saved versions',...window.__savedVersions.list().map(v=>Row(new Date(v.t).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'}),Btn('Restore',()=>sure('Go back to your settings from this time? Your current settings are saved first, so you can undo this.',()=>{window.__savedVersions.restore(v.k);toast('Restored. Reloading');setTimeout(()=>location.reload(),600)})),{desc:'Only you can see these. They are saved to your account automatically.'}))):document.createComment(''),
+   (C.guestBackupInfo&&C.guestBackupInfo().count)?Group('Guest setup',Row('From before you signed in',h('div',{style:'display:flex;gap:8px'},Btn('Restore',()=>sure('Bring back your guest settings? They will replace the same settings in your account. Class lists are added, not replaced.',()=>{const n=C.restoreGuest();toast('Restored');ctx.re()})),Btn('Dismiss',()=>{C.discardGuestBackup();ctx.re()})),{desc:'Your account\'s classroom was kept as it was. Your guest version is saved on this device so nothing is lost.'})):document.createComment(''),
    Group('Google Drive',Row(C.hasDrive()?'Connected':'Not connected',Btn(C.hasDrive()?'Reconnect':'Connect',async()=>{try{await C.driveToken(true);toast('Google Drive connected');ctx.re()}catch(e){toast('Could not connect: '+(e.code||e.message))}}),{desc:'Optional. Read only: ClassroomBoard can look at your files and can never change or delete them. Lasts about an hour.'})),
    Group(null,Row('Sign out',Btn('Sign out',async()=>{await C.signOut();toast('Signed out. This device still shows the classroom it has.');ctx.re()}),{desc:'Your data stays saved online. This device keeps showing the classroom it has now.'})),
    Group('Danger zone',Row('Sign out and start fresh',Btn('Start fresh',()=>sure('Sign out and remove all saved data from this device, so it looks like a new teacher opened it? Your account keeps everything online.',async()=>{await C.signOut(true)}),'dg')),
@@ -461,9 +475,15 @@ window.__panel2=function(title,s,rows,change,save,PAL){
   win.dir=cfg.ui.lang==='en'?'ltr':'rtl';document.body.append(sc);xl(win);setTimeout(()=>xb.focus(),30);return{close,body:pg}};
 
 /* ---------- undo bar: ordinary removals happen at once and can be undone ---------- */
+function acctMsg(r){if(!r)return'No answer.';if(r.err==='not-signed-in')return'This device is not signed in. Sign in first.';
+ if(r.err==='permission-denied')return'The account refused the request (permission denied). Sign out and sign in again with the same Google account as your main device.';
+ if(r.err==='unavailable'||r.err==='failed-precondition')return'No connection to your account right now. Check the internet on this device and try again.';
+ if(r.err)return'Could not read your account: '+r.err;
+ if(!r.n)return'Signed in as '+r.email+'. That account has nothing saved yet. If your board is saved under another email, sign out and sign in with that one. Otherwise open ClassroomBoard on your main device, sign in with '+r.email+', then Settings, Account and sync, Save now. Then sync here again.';
+ return'Signed in as '+r.email+'. Saved in your account: '+r.n+' items, last saved '+new Date(r.latest).toLocaleString()+'. Board settings: '+(r.hasCfg?'yes':'NOT saved')+'. Original-board marker: '+(r.hasMarker?'yes':'no')+'. Date style: '+(r.date||'not set')+'. Place: '+(r.loc||'not set')+(r.fromCache?'. (Showing the copy stored on this device, not live.)':'.')}
 let undoT;function undoBar(msg,undo,label){document.querySelectorAll('.s2undo').forEach(x=>x.remove());clearTimeout(undoT);
   const t=window.__t||(x=>x);const b=h('div',{class:'s2undo',role:'status'},h('span',{},t(msg)),h('button',{onclick:()=>{b.remove();undo()}},t(label||'Undo')));
-  if(cfg.ui.lang!=='en')b.dir='rtl';document.body.append(b);undoT=setTimeout(()=>b.remove(),label?15000:7000)}
+  if(cfg.ui.lang!=='en'&&/[\u0590-\u05FF]/.test(t(msg)))b.dir='rtl';document.body.append(b);undoT=setTimeout(()=>b.remove(),label?15000:7000)}
 window.__undoBar=undoBar;
 const hasS=n=>typeof S!=='undefined'&&S[n];
 const CATS=[
@@ -494,7 +514,8 @@ const CATS=[
     Nav('Name picker',()=>ctx.push(SUBS.picker.title,SUBS.picker.fn),{k:'picker'}),
     Nav('Behavior and stars',()=>ctx.push(SUBS.behavior.title,SUBS.behavior.fn),{k:'behavior'})))}},
  {id:'toolbar',name:'Toolbar',icon:'toolbar',render:(pg,ctx)=>{const t=cfg.toolbar,u=()=>{saveCfg();renderToolbar()};
-  pg.append(Group(null,Nav('Customize tools',()=>ctx.push(SUBS.tools.title,SUBS.tools.fn),{k:'tools',val:t.order.length-t.hidden.length+' shown'}),
+  pg.append(Group(null,Row('Choose your tools',Btn('Choose',()=>{ctx.close();setTimeout(()=>window.openToolPicker&&window.openToolPicker(),80)},'pri'),{desc:'Tap the tools you want on the toolbar.'})));
+  pg.append(Group(null,...(window.openCustomize?[Row('Customize my board',Btn('Open',()=>{ctx.close();setTimeout(()=>window.openCustomize&&window.openCustomize(),80)},'pri'),{desc:'Pick tools, background and layout in one place.'}),...(window.openRemotePair?[Row('Phone remote',Btn('Connect',()=>{ctx.close();setTimeout(()=>window.openRemotePair&&window.openRemotePair(),80)}),{desc:'Run the board from your phone.'})]:[])]:[]),Nav('Reorder tools',()=>ctx.push(SUBS.tools.title,SUBS.tools.fn),{k:'tools',val:t.order.length-t.hidden.length+' shown'}),
     Row('Position',Seg([['bottom','Bottom'],['left','Left'],['right','Right']].concat(t.pos==='top'?[['top','Top']]:[]),t.pos,v=>{t.pos=v;u();toolbarShow(true)}),{k:'toolpos'}),
     uiRows.labels(),
     Row('Button size',Slider(t.size,48,110,2,v=>{t.size=v;u()}),{k:'toolsize'}),
@@ -541,6 +562,6 @@ window.scheduleEditor=d=>{schedDate=d||dayKey();openSettings2('schedule')};windo
 window.openSettings=openSettings2;
 if(window.__sc)window.__sc.openSettings=openSettings2;
 
-addEventListener('load',()=>setTimeout(()=>{try{const C=window.Cloud;if(!C||!C.user||!C.guestBackupInfo)return;if(C.guestBackupInfo().count&&!sessionStorage.getItem('scGbNote')){sessionStorage.setItem('scGbNote','1');undoBar('Signed in. Your account\'s classroom was kept, and your guest setup is saved.',()=>openSettings2('account'),'Review')}}catch(e){}},5000));
+addEventListener('load',()=>setTimeout(()=>{try{if(window.__legacy)return;const C=window.Cloud;if(!C||!C.user||!C.guestBackupInfo)return;if(C.guestBackupInfo().count&&!sessionStorage.getItem('scGbNote')){sessionStorage.setItem('scGbNote','1');undoBar('Signed in. Your account\'s classroom was kept, and your guest setup is saved.',()=>openSettings2('account'),'Review')}}catch(e){}},5000));
 window.__openSettings2=openSettings2;window.__addStudents=()=>openSettings2('classroom','students');
 })();

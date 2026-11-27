@@ -4,5 +4,53 @@ service cloud.firestore {
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+    // ClassroomBoard Cast pairing. Short-lived, small, one answer per code. No listing.
+    match /cast/{code} {
+      allow get: if code.matches('[0-9]{6}');
+      allow create: if code.matches('[0-9]{6}')
+        && request.resource.data.keys().hasOnly(['offer','exp','v'])
+        && request.resource.data.offer is string && request.resource.data.offer.size() < 20000
+        && request.resource.data.exp is number
+        && request.resource.data.exp <= request.time.toMillis() + 660000;
+      allow update: if resource.data.exp > request.time.toMillis()
+        && !('answer' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['answer','name'])
+        && request.resource.data.answer is string && request.resource.data.answer.size() < 20000
+        && request.resource.data.name is string && request.resource.data.name.size() < 60;
+      allow delete: if code.matches('[0-9]{6}');
+    }
+
+    // ClassroomBoard Cast fallback: still pictures over HTTPS when the network blocks direct connections.
+    // Created by the board only after the teacher allowed the share. 45 minutes max, one picture per 1.5 s, small pictures only. No listing.
+    match /cf/{code} {
+      allow get: if code.matches('[0-9]{6}');
+      allow create: if code.matches('[0-9]{6}')
+        && request.resource.data.keys().hasOnly(['exp','t'])
+        && request.resource.data.exp is number
+        && request.resource.data.exp <= request.time.toMillis() + 2760000
+        && request.resource.data.t == request.time;
+      allow update: if resource.data.exp > request.time.toMillis()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['f','w','h','t'])
+        && request.resource.data.f is string && request.resource.data.f.size() < 260000
+        && request.resource.data.w is number && request.resource.data.h is number
+        && request.resource.data.t == request.time
+        && request.time > resource.data.t + duration.value(1500, 'ms');
+      allow delete: if code.matches('[0-9]{6}');
+    }
+
+    // ClassroomBoard Remote: reconnect signaling for an already approved phone. Id is 28 random characters. No listing.
+    match /rs/{tok} {
+      allow get: if tok.matches('[A-Za-z0-9]{24,40}');
+      allow create: if tok.matches('[A-Za-z0-9]{24,40}')
+        && request.resource.data.keys().hasOnly(['po','exp'])
+        && request.resource.data.po is string && request.resource.data.po.size() < 20000
+        && request.resource.data.exp is number
+        && request.resource.data.exp <= request.time.toMillis() + 360000;
+      allow update: if resource.data.exp > request.time.toMillis()
+        && !('a' in resource.data)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['a'])
+        && request.resource.data.a is string && request.resource.data.a.size() < 20000;
+      allow delete: if tok.matches('[A-Za-z0-9]{24,40}');
+    }
   }
 }

@@ -76,8 +76,15 @@ function startSync(){
   setS('syncing','Syncing…');
   C.unsub=onSnapshot(collection(db,'users',C.user.uid,'kv'),{includeMetadataChanges:true},snap=>{
     if(first&&snap.metadata.fromCache&&snap.empty)return;
-    if(first){const prev=localStorage.getItem('scmeta.uid');if(prev&&prev!==C.user.uid){wipeLocal(true)}else if(!prev&&!snap.empty){mergeGuest(snap)}localStorage.setItem('scmeta.uid',C.user.uid)}
+    const force=first&&window.__legacy&&!localStorage.getItem('scmeta.legacyPushed')&&!localStorage.getItem('scmeta.adopted');
+    if(first){const prev=localStorage.getItem('scmeta.uid');if(prev&&prev!==C.user.uid){wipeLocal(true)}else if(!prev&&!snap.empty&&!force){mergeGuest(snap)}localStorage.setItem('scmeta.uid',C.user.uid)}
     const m=metaT();let changed=0;const remote=new Set();const chKeys=[];
+    if(force){
+      // The original board's device saves its full board to the account first. What the account held is kept as a saved version.
+      try{const d={};let n=0;snap.docs.forEach(q=>{const x=q.data();if(x.v!=null&&!String(x.k).startsWith('bak.')){d[x.k]=x.v;n+=x.v.length}});if(n&&n<600000)Store.set('bak.cloudbefore',{t:Date.now(),d})}catch(e){}
+      Store.keys('').forEach(k=>{if(k==='bak.cloudbefore')return;m[k]=Date.now()+1000;C.pending.add(k)});
+      try{localStorage.setItem('scmeta.legacyPushed','1')}catch(e){}
+    }
     snap.docs.forEach(d=>{
       const x=d.data();remote.add(x.k);
       if(d.metadata.hasPendingWrites)return;
@@ -164,7 +171,7 @@ C.drive={
     let q="name contains '"+text.replace(/['\\]/g,' ')+"' and trashed=false";
     if(tok==='KEY'&&!window.__legacy)return {files:[]};
     if(tok==='KEY')q+=' and ('+SBF.map(x=>"'"+x+"' in parents").join(' or ')+')';
-    const f='files(id,name,mimeType,modifiedTime,webViewLink)';
+    const f='files(id,name,mimeType,modifiedTime,thumbnailLink,webViewLink)';
     return dget('files?pageSize=50&orderBy=modifiedTime desc&supportsAllDrives=true&includeItemsFromAllDrives=true&fields='+encodeURIComponent(f)+'&q='+encodeURIComponent(q),tok);
   },
   async meta(id,tok){return dget('files/'+id+'?supportsAllDrives=true&fields=id,name,mimeType,modifiedTime,webViewLink',tok)},
@@ -187,6 +194,8 @@ onAuthStateChanged(auth,u=>{
   C.user=u;
   if(u){setS('syncing','Signing in…');startSync()}else{if(C.unsub)C.unsub();C.unsub=null;setS('signed-out','')}
 });
+C.inspect=async()=>{if(!C.user)return{err:'not-signed-in'};try{const snap=await getDocs(collection(db,'users',C.user.uid,'kv'));const items=snap.docs.map(d=>d.data());const g=k=>items.find(x=>x.k===k);let cfg={};try{cfg=JSON.parse((g('cfg')||{}).v||'{}')}catch(e){}return{email:C.user.email,n:items.length,latest:Math.max(0,...items.map(x=>x.t||0)),hasCfg:!!g('cfg'),hasMarker:!!g('mig.roster1'),date:cfg.clock&&cfg.clock.date,loc:cfg.loc&&cfg.loc.name,fromCache:snap.metadata.fromCache,items}}catch(e){return{err:e.code||e.message}}};
+C.pullAll=async()=>{const r=await C.inspect();if(r.err||!r.n)return r;const St=SC().Store,m=metaT();C.applying=true;let a=0;for(const x of r.items){if(String(x.k).startsWith('bak.'))continue;try{if(x.v==null)localStorage.removeItem(St.p+x.k);else localStorage.setItem(St.p+x.k,x.v);m[x.k]=x.t||Date.now();a++}catch(e){}}C.applying=false;saveMeta(m);r.applied=a;return r};
 window.Cloud=C;
 if(window.__sc)install();else addEventListener('load',install);
 document.dispatchEvent(new Event('cloud-ready'));

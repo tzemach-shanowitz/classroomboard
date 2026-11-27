@@ -58,10 +58,11 @@ function driveBrowser(startId,kind,startName){
         list.innerHTML='';list.append(h('div',{class:'lbl'},'Loading…'));
         let r;try{r=await fn()}catch(e){list.innerHTML='';if(e.message==='expired'){list.append(h('div',{class:'card'},'Drive access expired.'),pill('Reconnect Google Drive',async()=>{try{await C.driveToken(true);show()}catch(x){toast('Could not connect')}},'big sel'))}else list.append(h('div',{class:'card'},navigator.onLine?('Could not load: '+e.message):'You are offline. Saved items in your library still open if you viewed them before.'));return}
         list.innerHTML='';if(title)list.append(h('div',{class:'lbl'},title));
+        if(!title&&stack.length===1&&(kind==='pres'||kind==='library')){Store.get(kind==='pres'?'presLinks':'libLinks',[]).forEach(x=>list.append(h('div',{class:'dtile'},h('div',{class:'grow',dir:'auto',onclick:()=>{close();openLink(x)}},h('div',{class:'dic'},'▶️'),h('div',{class:'dtx'},h('div',{class:'dnm'},x.title||x.url),h('div',{class:'lbl'},'Link'))))))}
         const files=r.files||[];if(!files.length)list.append(h('div',{class:'lbl'},'Nothing here.'));
         files.forEach(f0=>{let f=f0;if(f.mimeType==='application/vnd.google-apps.shortcut'&&f.shortcutDetails){f={...f,id:f.shortcutDetails.targetId,mimeType:f.shortcutDetails.targetMimeType}}
           const k=kindOf(f);
-          list.append(h('div',{class:'dtile'},h('div',{class:'grow',dir:'auto',onclick:()=>{if(k==='folder'){stack.push({id:f.id,name:f.name});show()}else{close();openDriveFile(f)}}},h('div',{class:'dic'},ICON[k]),h('div',{class:'dnm'},f.name),h('div',{class:'lbl'},k==='folder'?'Folder':new Date(f.modifiedTime).toLocaleDateString())),...(SIMPLE?[]:[pill('📌',()=>pin(f))])))});
+          list.append(h('div',{class:'dtile'},h('div',{class:'grow',dir:'auto',onclick:()=>{if(k==='folder'){stack.push({id:f.id,name:f.name});show()}else{close();openDriveFile(f)}}},h('div',{class:'dic'},ICON[k],(k!=='folder'&&f0.thumbnailLink)?h('img',{src:f0.thumbnailLink.replace(/=s\d+$/,'=s160'),loading:'lazy',referrerpolicy:'no-referrer',alt:'',onload:function(){this.parentNode.classList.add('hasth')},onerror:function(){this.remove()}}):null),h('div',{class:'dtx'},h('div',{class:'dnm'},f.name),h('div',{class:'lbl'},k==='folder'?'Folder':new Date(f.modifiedTime).toLocaleDateString()))),...(SIMPLE?[]:[pill('📌',()=>pin(f))])))});
         if(r.nextPageToken)list.append(pill('More…',async()=>{const m=await C.drive.list(cur.id,tok,r.nextPageToken);m.files.forEach(()=>0);toast('Showing first 200 items. Use search to find others.')}))}
     }
     show();
@@ -103,11 +104,12 @@ async function openPdfViewer(file){
     h('button',{class:'pill',onclick:()=>goto(n-1)},'◀'),pg,h('button',{class:'pill',onclick:()=>goto(n+1)},'▶'),
     h('button',{class:'pill',onclick:()=>Ink.setMode(Ink.mode==='write'?'view':'write')},'✍ Write'));
   wrap.append(bar);
+  window.__rcPdf={next:()=>goto(n+1),prev:()=>goto(n-1),get n(){return n},get total(){return total},name:file.name};
   const kd=e=>{if(Ink.mode==='write'&&e.key!=='ArrowLeft'&&e.key!=='ArrowRight')return;if(e.key==='ArrowRight'||e.key==='PageDown')goto(n+1);if(e.key==='ArrowLeft'||e.key==='PageUp')goto(n-1)};
   const rz=()=>{clearTimeout(rz.t);rz.t=setTimeout(render,200)};
   document.addEventListener('keydown',kd);addEventListener('resize',rz);
-  $('#app-main').append(wrap);document.body.classList.add('pdfmode');['clock','gear'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none'});
-  {const obs=new MutationObserver(()=>{if(!wrap.isConnected){document.body.classList.remove('pdfmode');['clock','gear'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display=''});obs.disconnect()}});obs.observe($('#app-main'),{childList:true})}
+  $('#app-main').append(wrap);liftBar(bar,wrap);document.body.classList.add('pdfmode');['clock','gear'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display='none'});
+  {const obs=new MutationObserver(()=>{if(!wrap.isConnected){window.__rcPdf=null;document.body.classList.remove('pdfmode');['clock','gear'].forEach(i=>{const e=document.getElementById(i);if(e)e.style.display=''});obs.disconnect()}});obs.observe($('#app-main'),{childList:true})}
   try{
     const lib=await pdfLib();
     let tok=null;try{tok=await C.driveToken(false)}catch(e){}

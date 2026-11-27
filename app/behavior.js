@@ -47,9 +47,10 @@ function resetWhat(what,who){const snap={k:'all',m:Object.assign({},S.m),r:Objec
 
 function openBehavior(){
   if(Widgets.open.behavior){Widgets.raise('behavior');return}
+  if(!Store.get('behSize1',false)){Store.set('behSize1',true);Store.del('w.behavior')}
   dailyCheck();
-  const L=names();const cols0=B.cols==='auto'?(L.length>24?3:L.length>12?2:1):+B.cols;
-  const inst=Widgets.create('behavior',cfg.labels.behavior||'Behavior & Stars',{x:Math.max(10,innerWidth/2-(cols0*190)),y:60,w:Math.min(innerWidth-20,cols0*380+40),h:Math.max(320,innerHeight-130),settings:behSettings});
+  const L=names();const cols0=B.cols==='auto'?(L.length>36?3:L.length>12?2:1):+B.cols;
+  const inst=Widgets.create('behavior',cfg.labels.behavior||'Behavior & Stars',{x:Math.max(10,innerWidth/2-(cols0*190)),y:60,w:Math.min(innerWidth-20,cols0*(innerWidth<700?380:300)+40),h:Math.max(320,Math.min(innerHeight-130,Math.ceil(L.length/cols0)*60+120)),settings:behSettings});
   inst.el.classList.add('beh');const body=inst.body;
   /* full screen button */
   let full=false,prevRect=null;
@@ -75,27 +76,27 @@ function openBehavior(){
   inst.paint=function(){
     if(!Widgets.open.behavior)return;
     const L=names();const n=L.length;
-    const narrow=body.clientWidth<700;const cols=narrow?2:B.cols==='auto'?(n>24?3:n>12?2:1):+B.cols;
+    const phone=body.clientWidth<700&&innerWidth<700;const narrow=phone;const cols=phone?1:B.cols==='auto'?(n>36?3:n>12?2:1):+B.cols;
     const el=inst.el;const dark=B.theme==='dark';
     el.style.background=dark?`rgba(24,34,48,${B.op/100})`:`rgba(255,255,255,${B.op/100})`;el.style.color=dark?'#f2f5fa':'#1b2430';
     el.style.setProperty('--bfont',FONTS[B.font]||FONTS.sans);el.classList.toggle('bdark',dark);
     grid.innerHTML='';
     if(!n){grid.append(h('div',{class:'blbl'},'No students yet. Add them in Settings > Students.'));return}
     const availH=Math.max(100,body.clientHeight-foot.offsetHeight-14);const rows=Math.ceil(n/cols);
-    const rowH=narrow?44:availH/rows;const gapK=B.gap/100;
+    const rowH=phone?68:narrow?44:availH/rows;const gapK=B.gap/100;
     const rh=narrow?60:clamp(rowH,34,120);
-    const ic=narrow?24:Math.round(clamp(rh*.78*B.iscale/100,26,96));const nf=narrow?Math.round(13*B.nscale/100):Math.round(clamp(rh*.46*B.nscale/100,14,60));const cf=Math.round(clamp(rh*.44*B.fscale/100,14,56));
-    grid.style.cssText=`display:grid;grid-auto-flow:column;grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},${Math.max(narrow?40:34,Math.min(rowH*gapK,rowH*1.4))}px);column-gap:${narrow?8:cols>1?26:0}px;align-content:start;flex:1;min-height:0;overflow:${narrow?'auto':'hidden'}`;
+    const ic=phone?44:narrow?24:Math.round(clamp(rh*.78*B.iscale/100,26,96));const nf=narrow?Math.round((phone?22:13)*B.nscale/100):Math.round(clamp(rh*.46*B.nscale/100,14,60));const cf=Math.round(clamp(rh*.44*B.fscale/100,14,56));
+    grid.style.cssText=`display:grid;grid-auto-flow:column;grid-template-columns:repeat(${cols},1fr);grid-template-rows:repeat(${rows},${Math.max(phone?68:narrow?40:34,Math.min(rowH*gapK,rowH*1.4))}px);column-gap:${phone?0:narrow?8:cols>1?26:0}px;align-content:start;flex:1;min-height:0;overflow:${narrow?'auto':'hidden'}`;
     L.forEach(name=>{
       const m=S.m[name]||0,r=S.r[name]||0,t=tierOf(r);
       const nm=h('div',{class:'bname',dir:'auto',style:`font-size:${nf}px`,onclick:e=>pop(e.currentTarget,name)},name);
-      const ind=h('button',{class:'bind',style:`width:${Math.max(narrow?32:48,ic+8)}px;height:${Math.max(narrow?32:48,ic+8)}px`,'aria-label':'Behavior mark',html:dotSVG(m,ic),onclick:e=>{if(m>=3){ind.classList.remove('shake');void ind.offsetWidth;ind.classList.add('shake');return}setMark(name,m+1);ind.classList.add('pop');inst.paint()}});
-      const star=h('button',{class:'bstar t'+t,style:`width:${Math.max(narrow?32:48,ic+8)}px;height:${Math.max(narrow?32:48,ic+8)}px`,'aria-label':'Add reward',html:starSVG(t,ic,++uid,r),onclick:e=>{const was=tierOf(S.r[name]||0);addReward(name,1);const nt=tierOf(S.r[name]);
+      const ind=h('button',{class:'bind',style:`width:${Math.max(phone?52:narrow?32:48,ic+8)}px;height:${Math.max(phone?52:narrow?32:48,ic+8)}px`,'aria-label':'Behavior mark',html:dotSVG(m,ic),onclick:e=>{if(m>=3){ind.classList.remove('shake');void ind.offsetWidth;ind.classList.add('shake');return}setMark(name,m+1);ind.classList.add('pop');inst.paint()}});
+      const star=h('button',{class:'bstar t'+t,style:`width:${Math.max(phone?52:narrow?32:48,ic+8)}px;height:${Math.max(phone?52:narrow?32:48,ic+8)}px`,'aria-label':'Add reward',html:starSVG(t,ic,++uid,r),onclick:e=>{const was=tierOf(S.r[name]||0);addReward(name,1);const nt=tierOf(S.r[name]);
         sparkle(star,nt>was?nt:1);chime(nt>was?nt:1);inst.paint();
         if(nt>was){const s2=[...grid.querySelectorAll('.bstar')].find(x=>x.dataset.n===name);if(s2){s2.classList.add('levelup')}}else{const s2=[...grid.querySelectorAll('.bstar')].find(x=>x.dataset.n===name);if(s2)s2.classList.add('pop')}}});
       star.dataset.n=name;
       const cnt=h('div',{class:'bcnt',style:`font-size:${cf}px`},String(r));
-      grid.append(h('div',{class:'brow'+(narrow?' bnar':'')},nm,ind,star))});
+      grid.append(h('div',{class:'brow'+(narrow?' bnar':'')+(phone?' bphone':'')},nm,ind,star))});
   };
   foot.append(
     h('button',{class:'bf',onclick:()=>{if(undo())inst.paint()},html:svgI('undo')+'<span>Undo</span>'}),

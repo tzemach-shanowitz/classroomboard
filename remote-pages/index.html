@@ -1,0 +1,155 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><title>ClassroomBoard Remote</title>
+<meta name="theme-color" content="#f5f5f7"><meta name="robots" content="noindex">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{--pu:#6858f8;--line:#e3e3ea;--mut:#6b6b78}
+html,body{margin:0;height:100%;background:#f5f5f7;color:#1d1d24;font:16px -apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;overscroll-behavior:none}
+#app{height:100dvh;display:flex;flex-direction:column;max-width:560px;margin:0 auto}
+header{display:flex;align-items:center;gap:8px;padding:calc(env(safe-area-inset-top) + 8px) 16px 6px;font-weight:600}
+header .dot{width:10px;height:10px;border-radius:50%;background:#bbb}header.ok .dot{background:#2dbd6e}header.bad .dot{background:#f5a524}
+header .st{margin-left:auto;font-weight:500;color:var(--mut);font-size:14px}
+#prev{border-radius:14px;background:linear-gradient(135deg,#2c5a4a,#4a7aa0);position:relative;overflow:hidden;flex:none;box-shadow:0 2px 10px rgba(0,0,0,.15);margin:0 auto}
+#prev .w{position:absolute;background:rgba(255,255,255,.92);border-radius:6px;font-size:10px;font-weight:600;padding:2px 4px;overflow:hidden;color:#333;border:2px solid transparent}
+#prev .w.act{border-color:var(--pu);box-shadow:0 0 0 2px rgba(104,88,248,.35)}
+#prev .big{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:600;text-align:center;padding:8px}
+main{flex:1;overflow:auto;padding:12px 16px calc(env(safe-area-inset-bottom) + 12px)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.b{border:0;border-radius:18px;background:#fff;color:#1d1d24;font:600 17px inherit;font-family:inherit;min-height:76px;padding:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;width:100%}
+.b svg{width:26px;height:26px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.b.on{background:var(--pu);color:#fff}.b.pri{background:var(--pu);color:#fff}.b.red{background:#fde8e8;color:#b42318}.b.sm{min-height:60px;font-size:17px}
+.b:active{transform:scale(.97)}
+.off .b,.off .tx{opacity:.4;pointer-events:none}
+.row{display:flex;gap:12px;margin-top:12px}.row>*{flex:1}
+.back{border:0;background:none;color:var(--pu);font:600 16px inherit;font-family:inherit;padding:6px 0 6px}
+.big2{font-size:46px;font-weight:700;text-align:center;font-variant-numeric:tabular-nums;margin:4px 0;line-height:1.2}
+.tx{width:100%;min-height:100px;border:1px solid var(--line);border-radius:16px;padding:14px;font:20px inherit;font-family:inherit;resize:none;background:#fff}
+.note{color:var(--mut);font-size:14px;margin:10px 2px;line-height:1.4}
+.sh{margin:6px 2px;font-weight:600;font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+.tl{display:flex;gap:12px}.tl .b{min-height:96px}.tl i{width:44px;height:44px;border-radius:50%;display:block}
+#pair{padding:32px 20px;text-align:center}#pair h1{font-size:26px}#pair input{font-size:34px;text-align:center;letter-spacing:.2em;width:100%;padding:14px;border-radius:16px;border:1px solid var(--line)}
+.banner{background:#fff4e5;color:#6b4200;border-radius:12px;padding:10px 12px;margin:0 16px 8px;font-weight:600;font-size:15px}
+</style></head><body><div id="app"></div>
+<script src="../cast-lib/rem.js"></script>
+<script>
+const $=s=>document.querySelector(s),LS=localStorage,app=$('#app');
+var ICEX=[];try{var x=new XMLHttpRequest();x.open("GET","/cast-lib/ice.json",false);x.send();if(x.status==200){var j=JSON.parse(x.responseText);if(j.iceServers)ICEX=j.iceServers}}catch(e){}
+const ICE={iceServers:[{urls:'stun:stun.l.google.com:19302'}].concat(ICEX)};
+const IC={present:'<rect x="3" y="4" width="18" height="12" rx="2"/><path d="M12 16v4M8 20h8"/>',timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>',message:'<path d="M4 5h16v11H9l-5 4z"/>',picker:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-4 3-6 6-6s6 2 6 6M17 5l1 2 2 .5-1.500 1.500.5 2-2-1-2 1 .5-2L14 7.500 16 7z"/>',traffic:'<rect x="8" y="2" width="8" height="20" rx="3"/><circle cx="12" cy="7" r="1.500"/><circle cx="12" cy="12" r="1.500"/><circle cx="12" cy="17" r="1.500"/>',home:'<path d="M4 11l8-7 8 7v9H4z"/>'};
+const svg=k=>`<svg viewBox="0 0 24 24">${IC[k]||''}</svg>`;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+let mode=LS.getItem('rem.mode')||'',abid=LS.getItem('rem.abid')||'',auid=null,lastOid='';
+let rt=LS.getItem('rem.rt')||'',bn=LS.getItem('rem.bn')||'',st=null,stAt=0,pc=null,dc=null,open=false,rx=0,panel=null,myN=+LS.getItem('rem.n')||0,msgDraft='',trying=false,status='connecting',msgSeen=false;
+async function gather(p){if(p.iceGatheringState==='complete')return;await new Promise(r=>{const f=()=>{if(p.iceGatheringState==='complete'){p.removeEventListener('icegatheringstatechange',f);r()}};p.addEventListener('icegatheringstatechange',f);setTimeout(r,3500)})}
+function devName(){const u=navigator.userAgent;const o=/iPhone/.test(u)?'iPhone':/iPad/.test(u)?'iPad':/Android/.test(u)?'Android phone':'Phone';const b=/CriOS/.test(u)?'Chrome':/FxiOS/.test(u)?'Firefox':/Chrome/.test(u)?'Chrome':/Safari/.test(u)?'Safari':'Browser';return (o+' ('+b+')').slice(0,40)}
+function pairUI(msg,acctHint){app.innerHTML=`<div id="pair"><h1>ClassroomBoard Remote</h1>${acctHint?'<p class="note">Tip: sign in on this phone at <a href="/app/">the app</a> (same account as the board) and the remote connects with no code.</p>':''}<p class="note">On the board, tap Connect phone. Then type the 6-digit code here, or scan the QR code.</p>${msg?`<p class="note" style="color:#b42318">${esc(msg)}</p>`:''}<input id="pc" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="off"><div class="row"><button class="b pri" id="pgo" disabled>Connect</button></div></div>`;
+  const i=$('#pc');i.oninput=()=>{i.value=i.value.replace(/\D/g,'').slice(0,6);$('#pgo').disabled=i.value.length!==6};$('#pgo').onclick=()=>pair(i.value)}
+async function pair(code){
+  app.innerHTML='<div id="pair"><h1>Connecting…</h1><p class="note" id="pn">Looking for the board…</p></div>';
+  try{
+    const d=await RemSig.read(code);if(!d)return pairUI('That code did not work. It may have expired. Make a new one on the board.');
+    history.replaceState(null,'',location.pathname);
+    const p=new RTCPeerConnection(ICE);let got=false;
+    p.ondatachannel=e=>{setup(p,e.channel,true)};
+    await p.setRemoteDescription(JSON.parse(d.offer));await p.setLocalDescription(await p.createAnswer());await gather(p);
+    await RemSig.answer(code,JSON.stringify(p.localDescription),devName());
+    $('#pn').textContent='Tap Allow on the board.';
+    const un=RemSig.watch(code,x=>{if(x===null&&!open&&!got){/* board closed or declined */}});
+    setTimeout(()=>{un();if(!open&&!rt)pairUI('The board did not allow this phone. Try again.')},60000);
+    pc=p;
+  }catch(e){pairUI('Could not connect. Check that your phone and the board are online.')}}
+function setup(p,ch,fresh){pc=p;dc=ch;
+  ch.onopen=()=>{open=true;rx=Date.now();RemSig&&rt&&RemSig.rsDel(rt);status='ok';if(!$('#hd'))shell();render(true)};
+  ch.onmessage=e=>{rx=Date.now();let m;try{m=JSON.parse(e.data)}catch(x){return}
+    if(m.t==='rt'){mode='';LS.removeItem('rem.mode');rt=m.rt;bn=m.bn||'';LS.setItem('rem.rt',rt);LS.setItem('rem.bn',bn);LS.setItem('rem.n','0');myN=0}
+    else if(m.t==='bye'){mode='';rt='';['rem.mode','rem.abid','rem.rt'].forEach(k=>LS.removeItem(k));open=false;try{pc.close()}catch(e){}pairUI('Disconnected by the board.')}
+    else if(m.t==='s'){st=m.s;stAt=Date.now();bn=st.bn||bn;if(m.ln>myN){myN=m.ln}render()}};
+  ch.onclose=()=>lost()}
+function lost(){if(!open)return;open=false;status='bad';render(true);reconnect()}
+async function reconnect(){
+  if(mode==='acct')return reconnectAcct();
+  if(trying||!rt)return;trying=true;
+  while(!open&&rt){
+    try{
+      try{pc&&pc.close()}catch(e){}
+      const p=new RTCPeerConnection(ICE);const ch=p.createDataChannel('cmd');setup(p,ch,false);
+      await p.setLocalDescription(await p.createOffer());await gather(p);
+      await RemSig.rsOffer(rt,JSON.stringify(p.localDescription));
+      let done=false;const un=RemSig.rsWatch(rt,async d=>{if(done)return;if(d&&d.a){done=true;try{await p.setRemoteDescription(JSON.parse(d.a))}catch(e){}}});
+      for(let i=0;i<30&&!open;i++)await wait(500);
+      un();if(!open){try{p.close()}catch(e){}RemSig.rsDel(rt)}
+    }catch(e){}
+    if(!open)await wait(2500)}
+  trying=false}
+
+async function acctList(){auid=await RemSig.uid(4000);if(!auid)return null;const l=await RemSig.acctList(auid);return l.filter(b=>b.offer&&!b.answer&&Date.now()-b.ts<6*60000)}
+async function acctJoin(b){
+  const p=new RTCPeerConnection(ICE);p.ondatachannel=e=>setup(p,e.channel,false);
+  await p.setRemoteDescription(JSON.parse(b.offer));await p.setLocalDescription(await p.createAnswer());await gather(p);
+  await RemSig.acctAnswer(auid,b.id,JSON.stringify(p.localDescription),devName(),b.oid);
+  pc=p;mode='acct';abid=b.id;bn=b.name||bn;LS.setItem('rem.mode','acct');LS.setItem('rem.abid',abid);LS.setItem('rem.bn',bn);lastOid=b.oid;
+  for(let i=0;i<30&&!open;i++)await wait(500);
+  if(!open){try{p.close()}catch(e){}}}
+async function reconnectAcct(){
+  if(trying)return;trying=true;
+  while(!open&&mode==='acct'){
+    try{if(!auid)auid=await RemSig.uid(4000);if(auid){const b=await RemSig.acctRead(auid,abid);if(b&&b.offer&&!b.answer&&b.oid!==lastOid)await acctJoin({id:abid,...b})}}catch(e){}
+    if(!open)await wait(2500)}
+  trying=false}
+async function tryAccount(){
+  app.innerHTML='<div id="pair"><h1>Looking for your board…</h1></div>';
+  let l=null;try{l=await acctList()}catch(e){l=null}
+  if(l===null){pairUI('',true);return}
+  if(l.length===0){pairUI('No open board found on your account. Open ClassroomBoard on the projector and sign in, or use a code.',true);return}
+  if(l.length===1){shell();render(true);await acctJoin(l[0]);if(open){return}if(mode==='acct'){reconnectAcct()}return}
+  app.innerHTML='<div id="pair"><h1>Which board?</h1>'+l.map((b,i)=>`<div class="row"><button class="b" data-i="${i}">${esc(b.name||'Board')}</button></div>`).join('')+'</div>';
+  app.querySelectorAll('[data-i]').forEach(b=>b.onclick=async()=>{shell();render(true);await acctJoin(l[+b.dataset.i]);if(!open)reconnectAcct()})}
+function shell(){app.innerHTML=`<header id="hd"><span class="dot"></span><span id="bn"></span><span class="st" id="stt"></span></header><div id="banner"></div><div id="prev"></div><main id="mn"></main>`}
+const ok=()=>open&&Date.now()-rx<12000;
+function send(o){if(!ok()||!dc||dc.readyState!=='open')return;myN++;LS.setItem('rem.n',myN);o.t='c';o.n=myN;try{dc.send(JSON.stringify(o))}catch(e){}}
+const fmt=s=>{s=Math.max(0,s|0);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
+function tmLeft(){const t=st&&st.tm;if(!t)return 0;return t.run?Math.max(0,t.left-Math.round((Date.now()-stAt)/1000)):t.left}
+let lastKey='';
+function render(force){
+  if(!$('#hd'))return;const good=ok();
+  $('#hd').className=good?'ok':'bad';$('#bn').textContent=bn||'ClassroomBoard';$('#stt').textContent=good?'Connected':'Reconnecting…';
+  $('#banner').innerHTML=good?'':'<div class="banner">Reconnecting… Buttons are off until the board answers.</div>';
+  drawPrev();
+  const key=JSON.stringify([panel,good,st&&[st.tool,st.w.map(w=>w.id),st.pdf&&[st.pdf.n,st.pdf.t],st.tm&&[st.tm.run,st.tm.done],st.msg!=null,st.pk,st.tl]]);
+  $('#mn').className=good?'':'off';
+  if(force||key!==lastKey){lastKey=key;view()}}
+setInterval(()=>{if(!$('#hd'))return;if(open&&Date.now()-rx>14000){lost()}else{const e=$('#tt');if(e)e.textContent=fmt(tmLeft());drawPrev();$('#hd').className=ok()?'ok':'bad'}},1000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&rt){if(!open||Date.now()-rx>8000){if(open){try{dc.close()}catch(e){}open=false}status='bad';render(true);reconnect()}}});
+function drawPrev(){
+  const p=$('#prev');if(!p)return;const vw=st?st.vw:16,vh=st?st.vh:9;const maxH=Math.min(innerHeight*.25,200);const w=Math.min(app.clientWidth-32,maxH*vw/vh);p.style.width=w+'px';p.style.height=(w*vh/vw)+'px';
+  if(!st){p.innerHTML='<div class="big">Waiting for the board…</div>';return}
+  let h='';if(st.pdf)h+=`<div class="big">Slide ${st.pdf.n} of ${st.pdf.t}</div>`;else if(st.tool==='whiteboard')h+='<div class="big" style="background:#fff;color:#444">Whiteboard</div>';else if(!st.w.length)h+='<div class="big">Classroom board</div>';
+  for(const w of st.w){const act=w.id===st.tool||(w.id==='rcmsg'&&st.msg!=null);let inner=w.t;if(w.id==='timer'&&st.tm)inner=fmt(tmLeft());if(w.id==='rcmsg'&&st.msg)inner=st.msg;if(w.id==='cast')inner='Laptop screen is showing';
+    h+=`<div class="w${act?' act':''}" style="left:${w.x*100}%;top:${w.y*100}%;width:${w.w*100}%;height:${w.h*100}%" dir="auto">${esc(inner)}</div>`}
+  p.innerHTML=h}
+const isOpen=id=>st&&(st.w.some(w=>w.id===id)||(id==='present'&&st.pdf));
+function view(){
+  const mn=$('#mn'),q=s=>mn.querySelector(s);
+  if(!panel){mn.innerHTML=`<div class="grid"><button class="b${isOpen('timer')?' on':''}" data-p="timer">${svg('timer')}Timer</button><button class="b${st&&st.msg!=null?' on':''}" data-p="message">${svg('message')}Message</button><button class="b${isOpen('picker')?' on':''}" data-p="picker">${svg('picker')}Pick next student</button><button class="b${isOpen('traffic')?' on':''}" data-p="traffic">${svg('traffic')}Traffic light</button><button class="b${st&&st.pdf?' on':''}" data-p="present">${svg('present')}Slides (PDF)</button><button class="b" id="hm">${svg('home')}Home</button></div>`;
+    mn.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{panel=b.dataset.p;if(panel==='timer'&&!isOpen('timer'))send({a:'timer',op:'preset',min:5});render(true)});q('#hm').onclick=()=>send({a:'home'});return}
+  let h=`<button class="back" id="bk">‹ All buttons</button>`;
+  if(panel==='timer'){const t=st&&st.tm;h+=`<div class="big2" id="tt">${t?fmt(tmLeft()):'5:00'}</div><div class="grid">${[1,5,10].map(m=>`<button class="b sm" data-m="${m}">${m} min</button>`).join('')}<button class="b pri sm" id="ts">${t&&t.run?'Pause':'Start'}</button></div><div class="row"><button class="b sm" id="tr">Reset</button><button class="b red sm" id="tc">Close timer</button></div>`}
+  else if(panel==='message'){h+=`<textarea class="tx" id="mt" dir="auto" placeholder="Type here. Only you see this until you tap Show on board.">${esc(msgDraft)}</textarea><div class="row"><button class="b pri sm" id="ms">${st&&st.msg!=null?'Update':'Show on board'}</button><button class="b sm" id="mh">Hide</button></div>`}
+  else if(panel==='picker'){h+=`<div class="big2" dir="auto" style="font-size:34px;min-height:50px">${esc((st&&st.pk)||'')}</div><div class="row"><button class="b pri sm" id="pn2">Pick next</button></div><p class="note">The name also shows on the board. Close it on the board when you are done.</p>`}
+  else if(panel==='traffic'){const c=['#e5484d','#f5c518','#46c26e'],n=['Quiet','Working','Talk'];h+=`<div class="tl">${[0,1,2].map(i=>`<button class="b" data-i="${i}" style="${st&&st.tl===i?'outline:4px solid #6858f8':''}"><i style="background:${c[i]}"></i>${['Red','Yellow','Green'][i]}</button>`).join('')}</div>`}
+  else if(panel==='present'){const p=st&&st.pdf;h+=`<div class="big2">${p?`${p.n} of ${p.t}`:'No slideshow open'}</div><div class="row"><button class="b sm" id="pv">‹ Previous</button><button class="b pri sm" id="nx">Next ›</button></div>`;
+    if(!p)h+=`<div class="row"><button class="b sm" id="op">Open presentations on the board</button></div>`;h+=`<p class="note">Works with PDF files in ClassroomBoard's own viewer. For Google Slides, use File, Download, PDF first.</p>`}
+  h+=`<div class="row"><button class="b sm" id="hm">${svg('home')}Home</button></div>`;mn.innerHTML=h;
+  q('#bk').onclick=()=>{panel=null;render(true)};q('#hm').onclick=()=>send({a:'home'});
+  if(panel==='timer'){mn.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>send({a:'timer',op:'preset',min:+b.dataset.m}));q('#ts').onclick=()=>send({a:'timer',op:st&&st.tm&&st.tm.run?'pause':'start'});q('#tr').onclick=()=>send({a:'timer',op:'reset'});q('#tc').onclick=()=>send({a:'timer',op:'close'})}
+  if(panel==='message'){const t=q('#mt');t.oninput=()=>{msgDraft=t.value};q('#ms').onclick=()=>{if(msgDraft.trim())send({a:'msg',op:'show',text:msgDraft})};q('#mh').onclick=()=>send({a:'msg',op:'hide'})}
+  if(panel==='picker')q('#pn2').onclick=()=>send({a:'picker'});
+  if(panel==='traffic')mn.querySelectorAll('[data-i]').forEach(b=>b.onclick=()=>send({a:'traffic',i:+b.dataset.i}));
+  if(panel==='present'){q('#pv').onclick=()=>send({a:'pdf',d:-1});q('#nx').onclick=()=>send({a:'pdf',d:1});const o=q('#op');o&&(o.onclick=()=>send({a:'openpres'}))}}
+(async function boot(){
+  const c=new URLSearchParams(location.search).get('c');
+  if(c&&/^\d{6}$/.test(c)){await pair(c);return}
+  if(mode==='acct'&&abid){shell();render(true);reconnectAcct();return}
+  if(rt){shell();render(true);reconnect();return}
+  await tryAccount()})();
+</script></body></html>

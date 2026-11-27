@@ -84,7 +84,7 @@ function video(){
     b.append(box,h('div',{class:'row',style:'margin-top:8px;flex-wrap:nowrap'},bt('🎬 Upload',()=>file.click(),'sel'),url),file);addFs(inst);show(s.url)})}
 
 /* ---------- Embed a web page ---------- */
-const BLOCK=/(^|\.)(google\.com|facebook\.com|instagram\.com|twitter\.com|x\.com|linkedin\.com|amazon\.com|netflix\.com|github\.com|paypal\.com|whatsapp\.com|zoom\.us)$/i;
+const BLOCK=window.NOEMBED=/(^|\.)(google\.com|facebook\.com|instagram\.com|twitter\.com|x\.com|linkedin\.com|amazon\.com|netflix\.com|github\.com|paypal\.com|whatsapp\.com|zoom\.us|chatgpt\.com|openai\.com|claude\.ai|anthropic\.com|bing\.com|microsoft\.com|live\.com|office\.com|apple\.com|reddit\.com|pinterest\.com|tiktok\.com|discord\.com|slack\.com|spotify\.com|twitch\.tv|yahoo\.com|duckduckgo\.com|613tube\.com|youtube\.com|youtu\.be|dropbox\.com|canva\.com|zoho\.com)$/i;
 function embed(){
   let s=Object.assign({url:''},get('embed',{}));const sv=()=>put('embed',s);
   mk('embed',{w:800,h:560,settings:()=>panel('Web page',s,[{t:'note',label:'Many sites do not allow being shown inside another page. When that happens you get an "Open in a new tab" button instead of a blank box.'},{t:'el',el:alphaRow('embed')}],()=>{},sv)},(b,inst)=>{
@@ -93,10 +93,10 @@ function embed(){
       const y=ytId(u);if(y)u='https://www.youtube-nocookie.com/embed/'+y;
       let host='';try{host=new URL(u).hostname}catch(e){box.append(h('div',{style:'color:#c33;padding:20px'},'That is not a valid web address.'));return}
       const alt=why=>{box.innerHTML='';box.append(h('div',{style:'padding:30px;text-align:center'},h('div',{style:'font-size:20px;margin-bottom:12px'},why),h('a',{href:norm(s.url),target:'_blank',rel:'noopener',class:'pill sel',style:'text-decoration:none;display:inline-block;font-size:20px;padding:12px 24px'},'Open in a new tab')))};
-      if(BLOCK.test(host)&&!y){alt(host+' does not allow being shown inside another page.');return}
-      const f=h('iframe',{src:u,allow:'fullscreen',style:'width:100%;height:100%;border:0',referrerpolicy:'no-referrer'});box.append(f,h('div',{style:'position:absolute;right:8px;bottom:8px'},h('a',{href:norm(s.url),target:'_blank',rel:'noopener',style:'font-size:13px;background:#fffd;border-radius:10px;padding:4px 10px;color:#334;text-decoration:none;box-shadow:0 1px 6px #0003'},'Blank? Open in a new tab ↗')))};
+      if(BLOCK.test(host)&&!y&&!/^(www\.)?youtube\.com$/i.test(host)||BLOCK.test(host)&&!y){alt(host.replace(/^www\./,'')+' does not allow being shown inside another page.');return}
+      const f=h('iframe',{src:u,allow:'fullscreen',style:'width:100%;height:100%;border:0',referrerpolicy:'no-referrer'});box.append(f,h('div',{style:'position:absolute;right:8px;bottom:8px'},h('a',{href:norm(s.url),target:'_blank',rel:'noopener',style:'font-size:15px;background:#fffe;border-radius:12px;padding:8px 14px;color:#334;text-decoration:none;box-shadow:0 1px 6px #0003'},'Blank? Open in a new tab ↗')))};
     const url=h('input',{class:'inp',dir:'ltr',placeholder:'Web address',value:s.url,style:'flex:1;min-width:120px',onchange:e=>{s.url=e.target.value.trim();sv();load()}});
-    b.append(h('div',{class:'row',style:'flex-wrap:nowrap;margin-bottom:8px'},url,bt('Go',()=>{s.url=url.value.trim();sv();load()},'sel'),bt('⟳',load,'','min-width:44px')),box);addFs(inst);load()})}
+    b.append(h('div',{class:'row',style:'flex-wrap:nowrap;margin-bottom:8px'},url,bt('Go',()=>{s.url=url.value.trim();sv();load()},'sel'),bt('⟳',load,'','min-width:44px'),h('a',{class:'pill',href:'#',title:'Open in a new tab','aria-label':'Open in a new tab',style:'text-decoration:none;min-width:44px;text-align:center',onclick:e=>{e.preventDefault();const u=norm(url.value||s.url);if(u)window.open(u,'_blank','noopener')}},'↗')),box);addFs(inst);load()})}
 
 /* ---------- Link (shortcut tiles) ---------- */
 function link(){
@@ -110,7 +110,7 @@ function link(){
       h('button',{style:`width:${PX}px;height:${PX}px;border-radius:24px;border:0;background:${it.c};color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;box-shadow:0 6px 16px ${it.c}55`,onclick:()=>{if(s.open==='here'){Widgets.close('embed');Store.set('w2.embed',{url:it.u});M.FN.embed()}else window.open(it.u,'_blank','noopener')}},h('div',{style:`font-size:${PX*.4}px;line-height:1`},it.e),h('div',{dir:'auto',style:`font-size:${Math.max(12,PX*.14)}px;font-weight:700;padding:0 6px;overflow:hidden;max-width:100%;white-space:nowrap;text-overflow:ellipsis`},it.n)),
       h('button',{'aria-label':'Edit',style:'position:absolute;top:-6px;right:-6px;width:30px;height:30px;border-radius:50%;border:0;background:#fff;box-shadow:0 1px 6px #0004;font-size:14px',onclick:()=>edit(it,i)},'✎'));grid.append(t)});
       grid.append(h('button',{style:`width:${PX}px;height:${PX}px;border-radius:24px;border:3px dashed #c7cbe0;background:#fafbff;color:#889;font-size:${PX*.35}px`,onclick:()=>edit(null)},'＋'))};
-    b.append(grid);draw();if(!s.items.length)setTimeout(()=>edit(null),200)})}
+    b.append(grid);draw();if(!s.items.length){grid.prepend(h('button',{class:'pill big sel',style:'font-size:18px;padding:14px 26px;width:100%',onclick:()=>edit(null)},'Add a link'))}})}
 
 /* ---------- Webcam ---------- */
 function webcam(){

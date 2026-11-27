@@ -24,7 +24,7 @@ body.v-phone #roomname{display:none}
 #welcome .ch button.on{background:var(--ac,#6858f8);border-color:var(--ac,#6858f8);color:#fff}
 #welcome .dots{font-size:12px;color:#888;margin-bottom:8px}`;
 document.head.appendChild(st);
-if(Store.get('welcome.done',false)||Store.get('cfg',null)!==null)return;
+if(Store.get('cust.setup',false))return;
 const h2=(t,a,...k)=>{const e=document.createElement(t);for(const[x,v]of Object.entries(a||{}))x==='class'?e.className=v:x.startsWith('on')?e[x]=v:e.setAttribute(x,v);k.flat().forEach(c=>e.append(c));return e};
 const PH=[['n3','Turquoise lake'],['n8','Mountain reflection'],['n9','Snowy mountains'],['n2','Misty golden morning'],['n1','Waterfall in autumn'],['n4','Foggy pines']];
 const ACT=[['Keeping time',['timer']],['Calling on students',['picker']],['Quiet work',['sound','traffic']],['Explaining on the board',['whiteboard','text']],['Group work',['wheel']],['Daily routine',['schedule']]];
@@ -38,10 +38,10 @@ function applyTools(){if(!picked.size)return;const ids=[];ACT.forEach(([n,t])=>{
 function view(){root.innerHTML='';const c=h2('div',{class:'wc'});root.append(c);const dots=step>0?h2('div',{class:'dots'},'Step '+step+' of 3'):null;if(dots)c.append(dots);
  const foot=(next,nextLabel,back)=>{const b=h2('div',{class:'wb'});if(back)b.append(h2('button',{class:'lk',onclick:()=>{step--;view()}},'Back'));b.append(h2('button',{class:'lk',style:back?'margin-right:0':'',onclick:()=>{step++;view()}},'Skip'),h2('button',{class:'pri',onclick:next},nextLabel));c.append(b)};
  if(step===0){c.append(h2('h2',{},'This is your classroom.'),h2('p',{},'Everything works right now. Want to make it yours? It takes about a minute.'));
-  const b=h2('div',{class:'wb'},h2('button',{onclick:()=>finish()},'Just start teaching'),h2('button',{class:'pri',onclick:()=>{step=1;view()}},'Make it mine'));c.append(b)}
+  const b=h2('div',{class:'wb'},h2('button',{onclick:()=>finish()},'Just start teaching'),h2('button',{class:'pri',onclick:()=>{finish();setTimeout(()=>{window.__custEnter&&window.__custEnter()},200)}},'Make it mine'));c.append(b)}
  else if(step===1){c.append(h2('h2',{},'What do your students call this room?'));const i=h2('input',{type:'text',maxlength:'40',placeholder:'For example: Room 14',value:cfg.room.name||'','aria-label':'Classroom name'});i.oninput=()=>{cfg.room.name=i.value.trim();renderRoomName()};i.onkeydown=e=>{if(e.key==='Enter'){step=2;view()}};c.append(i,h2('p',{style:'margin:8px 0 0;font-size:13px'},'Optional. Shown on your board, saved on this computer only.'));foot(()=>{step=2;view()},'Next',false);setTimeout(()=>i.focus(),50)}
  else if(step===2){c.append(h2('h2',{},'Pick the view from your window.'),h2('p',{},'Tap one and watch your board change.'));const g=h2('div',{class:'ph'});PH.forEach(([id,n])=>{const b=h2('button',{'aria-label':n,title:n,style:`background-image:url(bg/${id}.jpg)`,onclick:()=>{cfg.bg.manualId=id;cfg.bg.manualDay=dayKey();cfg.bg.auto=false;renderBg();g.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on')}});if(cfg.bg.manualId===id)b.classList.add('on');g.append(b)});c.append(g);foot(()=>{step=3;view()},'Next',true)}
  else{c.append(h2('h2',{},'What happens in your room most?'),h2('p',{},'We will put those tools within reach. You can change this any time in Settings.'));const g=h2('div',{class:'ch'});ACT.forEach(([n])=>{const b=h2('button',{'aria-pressed':picked.has(n)?'true':'false',onclick:()=>{picked.has(n)?picked.delete(n):picked.add(n);b.classList.toggle('on',picked.has(n));b.setAttribute('aria-pressed',picked.has(n));applyTools()}});b.textContent=n;if(picked.has(n))b.classList.add('on');g.append(b)});c.append(g);
   const b=h2('div',{class:'wb'},h2('button',{class:'lk',onclick:()=>{step=2;view()}},'Back'),h2('button',{class:'pri',onclick:()=>finish('Saved on this computer. Sign in any time to keep it on all your devices.')},'Done'));c.append(b)}}
-setTimeout(view,900);
+setTimeout(()=>{finish();window.__custEnter&&window.__custEnter()},900);
 })();

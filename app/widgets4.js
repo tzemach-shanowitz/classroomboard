@@ -104,7 +104,7 @@ function groups(){
     const make=()=>{const names=activeList().students.filter(x=>!x.absent).map(x=>x.name);sel=null;if(!names.length){G=[];draw();return}
       for(let i=names.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[names[i],names[j]]=[names[j],names[i]]}
       const n=s.mode==='size'?Math.max(1,Math.round(names.length/s.n)):Math.min(s.n,names.length);G=Array.from({length:n},()=>[]);names.forEach((x,i)=>G[i%n].push(x));draw()};
-    const draw=()=>{out.innerHTML='';if(!G.length){out.append(h('div',{style:'color:#667;padding:10px'},'Tap "Make groups". If it stays empty, add students in Settings, Students.'));return}
+    const draw=()=>{out.innerHTML='';if(!G.length){out.append(h('div',{style:'color:#667;padding:10px'},'Tap "Make groups". If it stays empty, add students in Settings, Classroom, Class lists and students.'));return}
       const COL=['#6d5efc','#2f7de1','#2e9e5b','#f08a24','#e5484d','#e56bb0','#14a3a3','#8a6d3b','#7a4de0','#c2410c','#0f766e','#be185d'];
       G.forEach((g,gi)=>{const c=COL[gi%COL.length];const box=h('div',{style:`flex:1 1 200px;border:3px solid ${c}33;border-top:8px solid ${c};border-radius:16px;padding:6px 10px 10px;background:#fff;min-height:90px`,onclick:e=>{if(sel&&e.target===box||sel&&e.target.classList.contains('gh')){G[sel.g].splice(sel.i,1);g.push(sel.n);sel=null;draw()}}},
         h('input',{class:'inp gh',dir:'auto',value:s.names[gi]||'Group '+(gi+1),style:`border:0;background:transparent;font-weight:900;font-size:20px;color:${c};width:100%;padding:2px`,onchange:e=>{s.names[gi]=e.target.value;sv()}}),
@@ -124,7 +124,7 @@ function dice(){
     const PX=s.n>3?100:130;let busy=false;
     const roll=()=>{if(busy)return;busy=true;if(s.sound)try{Audio_.unlock();const c=Audio_.ctx;for(let i=0;i<5;i++){const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=180+Math.random()*120;g.gain.setValueAtTime(.05,c.currentTime+i*.07);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+i*.07+.05);o.connect(g).connect(c.destination);o.start(c.currentTime+i*.07);o.stop(c.currentTime+i*.07+.06)}}catch(e){}
       let k=0,v=[];const iv=setInterval(()=>{v=Array.from({length:s.n},()=>1+Math.floor(Math.random()*s.type));row.innerHTML='';v.forEach(x=>{const d=h('div',{style:`transform:rotate(${(Math.random()-.5)*40}deg);transition:transform .07s`,html:dieSvg(x,+s.type,s.color,PX)});row.append(d)});if(++k>10){clearInterval(iv);busy=false;sum.textContent=s.n>1?'Total: '+v.reduce((a,c)=>a+c,0):''}},70)};
-    row.onclick=roll;b.append(row,sum,h('div',{style:'text-align:center;font-size:14px;color:#889'},'Tap the dice to roll.'));roll()})}
+    row.onclick=roll;row.append(h('div',{style:'font-size:96px;line-height:1;opacity:.5'},'🎲'));sum.textContent='Tap to roll';b.append(row,sum);{const bt=h('div',{style:'text-align:center;margin-top:6px'},h('button',{class:'pill big sel',style:'font-size:18px;padding:12px 28px',onclick:roll},'Roll'));b.append(bt)}})}
 
 /* ---------- Scoreboard ---------- */
 function scoreboard(){

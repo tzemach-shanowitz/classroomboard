@@ -1,21 +1,37 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>ClassroomBoard Cast: share your screen</title><style>*{box-sizing:border-box}body{margin:0;font:18px -apple-system,system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;display:flex;align-items:center;justify-content:center}.c{background:#fff;border-radius:22px;box-shadow:0 8px 40px #0002;padding:32px;max-width:520px;width:92%;text-align:center}h1{font-size:26px;margin:0 0 6px}p{color:#555;margin:8px 0}input{font:600 38px monospace;letter-spacing:.3em;text-align:center;width:100%;border:2px solid #ccd;border-radius:14px;padding:10px}button{font:inherit;font-weight:600;border:0;border-radius:14px;padding:14px 22px;margin:6px;background:#0a7aff;color:#fff;cursor:pointer}button.g{background:#e8e8ed;color:#1d1d1f}button.r{background:#d92d20}.s{font-size:16px;color:#666;margin-top:12px;min-height:22px}.big{font:700 72px monospace;letter-spacing:.15em}</style></head><body>
-<div class="c" id="a"><h1>Share your screen to the board</h1><p>Type the 6-digit code shown on the classroom board.</p>
-<input id="code" inputmode="numeric" maxlength="6" placeholder="······" autocomplete="off">
-<div><button id="go">Share my screen</button></div>
-<p class="s" id="st"></p><p style="font-size:14px">Your browser will ask which screen, window or tab to share. Video goes straight to the board when possible. Nothing is recorded or stored.</p></div>
-<div class="c" id="b" style="display:none"><h1 id="bt">Connecting…</h1><p id="bs"></p>
-<div><button class="g" id="pause">Pause</button><button class="r" id="stop">Stop sharing</button></div>
-<label style="font-size:15px">Quality <select id="q"><option value="2500000">Auto (sharp)</option><option value="1200000">Light (slow network)</option><option value="5000000">Very sharp</option></select></label>
-<p class="s" id="mon"></p></div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Share your screen to the board</title><link rel="stylesheet" href="../cast-lib/cast.css"></head><body>
+<main class="card" id="a"><div class="badge"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8 20h8M12 16v4"/></svg></div>
+<h1>Share your screen</h1><p class="sub">Type the 6-digit code shown on the classroom board.</p>
+<div class="warn" id="nocap" style="display:none">This device or browser cannot share its screen. Open this page in Chrome, Edge or Firefox on a computer.</div>
+<input class="codein" id="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="000000" autocomplete="off" aria-label="6-digit code from the board">
+<input class="nm" id="nm" maxlength="40" placeholder="Your name (optional), e.g. Ms. Cohen" autocomplete="off" aria-label="Name for the board (optional)">
+<div class="row"><button class="btn pri block" id="go" disabled>Choose what to share</button></div>
+<p class="err" id="st" role="status"></p>
+<p class="fine">Nothing is recorded. The board can't control your computer.</p></main>
+<main class="card" id="b" style="display:none"><div class="badge"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8 20h8M12 16v4"/></svg></div>
+<h1 id="bt">Connecting</h1><p class="sub" id="bs"></p>
+<div class="pill wait" id="pill"><span class="dot"></span><span>Connecting</span></div>
+<div class="row"><button class="btn sec" id="pause">Pause</button><button class="btn red" id="stop">Stop sharing</button></div>
+<button class="link" id="det" type="button">Details</button>
+<p class="mon" id="mon" style="display:none"></p></main>
 <script src="../cast-lib/sig.js"></script><script>
-const $=i=>document.getElementById(i);let pc,code,stream,sender,timer,paused=false,lastB=0,lastT=0,total=0;
-const CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
-const q=new URLSearchParams(location.search).get('c');if(q&&/^\d{6}$/.test(q))$('code').value=q;
-function err(m){$('st').textContent=m}
+const $=i=>document.getElementById(i);let pc,code,stream,sender,timer,paused=false,lastB=0,lastT=0,total=0,fbOn=false,fbTimer,fbUn,fbN=0,fbKB=0,fbStart=0,fbPrev=null,fbV,fbC;
+var ICEX=[];try{var x=new XMLHttpRequest();x.open("GET","/cast-lib/ice.json",false);x.send();if(x.status==200){var j=JSON.parse(x.responseText);if(j.iceServers)ICEX=j.iceServers}}catch(e){}
+const CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'}].concat(ICEX)};
+const q=new URLSearchParams(location.search).get('c');
+const CAN=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+if(!CAN){$('nocap').style.display='';$('code').style.display='none';$('nm').style.display='none';$('go').style.display='none'}
+$('nm').value=localStorage.getItem('cast.name')||'';
+function ready(){$('go').disabled=!(CAN&&/^\d{6}$/.test($('code').value.trim()))}
+$('code').oninput=()=>{$('code').value=$('code').value.replace(/\D/g,'').slice(0,6);ready()};
+$('det').onclick=()=>{const m=$('mon');m.style.display=m.style.display==='none'?'':'none'};
+function devName(){const n=$('nm').value.trim().slice(0,40);if(n){localStorage.setItem('cast.name',n);return n}const u=navigator.userAgent;const b=/Edg\//.test(u)?'Edge':/Firefox\//.test(u)?'Firefox':/Chrome\//.test(u)?'Chrome':/Safari\//.test(u)?'Safari':'Browser';const o=/Windows/.test(u)?'Windows':/Mac OS X|Macintosh/.test(u)?'Mac':/CrOS/.test(u)?'Chromebook':/Android/.test(u)?'Android':/iPhone|iPad/.test(u)?'iPhone or iPad':/Linux/.test(u)?'Linux':'computer';return b+' on '+o}
+if(q&&/^\d{6}$/.test(q))$('code').value=q;
+setTimeout(ready,0);function err(m){$('st').textContent=m}
+if(new URLSearchParams(location.search).get('embed'))document.body.classList.add('embed');
 function gathered(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();p.onicegatheringstatechange=()=>p.iceGatheringState==='complete'&&r();setTimeout(r,4000)})}
 const enc=d=>btoa(unescape(encodeURIComponent(JSON.stringify(d))));const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s))));
-function setQ(){if(!sender)return;const p=sender.getParameters();p.encodings=p.encodings&&p.encodings.length?p.encodings:[{}];p.encodings[0].maxBitrate=+$('q').value;p.degradationPreference='maintain-resolution';sender.setParameters(p).catch(()=>{})}
-$('q').onchange=setQ;
+function setQ(){if(!sender)return;const p=sender.getParameters();p.encodings=p.encodings&&p.encodings.length?p.encodings:[{}];p.encodings[0].maxBitrate=2500000;p.degradationPreference='maintain-resolution';sender.setParameters(p).catch(()=>{})}
+
 $('go').onclick=async()=>{
  code=$('code').value.trim();if(!/^\d{6}$/.test(code))return err('Type the 6 digits from the board.');
  if(!navigator.mediaDevices||!navigator.mediaDevices.getDisplayMedia)return err('This device or browser cannot share its screen. Use Chrome, Edge or Firefox on a computer.');
@@ -26,14 +42,28 @@ $('go').onclick=async()=>{
   pc=new RTCPeerConnection(CFG);await pc.setRemoteDescription(dec(d.offer));
   const tr=pc.getTransceivers().find(t=>t.receiver.track.kind==='video');tr.direction='sendonly';await tr.sender.replaceTrack(stream.getVideoTracks()[0]);sender=tr.sender;setQ();
   await pc.setLocalDescription(await pc.createAnswer());await gathered(pc);
-  await CastSig.answer(code,enc(pc.localDescription),(navigator.userAgentData&&navigator.userAgentData.platform||navigator.platform||'Computer').slice(0,40));
+  await CastSig.answer(code,enc(pc.localDescription),devName());
  }catch(e){stream.getTracks().forEach(t=>t.stop());return err('Could not connect: '+(e.code||e.message))}
- $('a').style.display='none';$('b').style.display='';$('bt').textContent='Waiting for the board to allow it…';
- pc.onconnectionstatechange=()=>{const s=pc.connectionState;if(s==='connected'){$('bt').textContent='Sharing to the board';$('bs').textContent='';monitor()}else if(s==='failed'){$('bt').textContent='Could not connect directly';$('bs').textContent='This network blocks direct connections. A relay is not set up yet.'}else if(s==='disconnected'||s==='closed'){$('bt').textContent='Disconnected'}};
+ $('a').style.display='none';$('b').style.display='';$('bt').textContent='Waiting for the board';$('bs').textContent='On the board, tap Allow.';setPill('wait','Waiting for the board to allow it');fbUn=CastSig.fwatch(code,d=>{if(d&&!fbOn&&pc&&pc.connectionState!=='connected')fbBegin()});
+ pc.onconnectionstatechange=()=>{const s=pc.connectionState;if(s==='connected'){$('bt').textContent='You are sharing';$('bs').textContent='Your screen is showing on the board.';setPill('live','Live on the board');monitor()}else if(s==='failed'){if(!fbOn){$('bt').textContent='Switching mode';$('bs').textContent='This network blocks direct connections. Switching to school-network mode…';setPill('wait','Switching mode');setTimeout(()=>{if(!fbOn&&pc&&pc.connectionState==='failed'){$('bt').textContent='Could not connect';$('bs').textContent='Could not reach the board. Check the code and try again.';setPill('err','Connection failed')}},30000)}}else if((s==='disconnected'||s==='closed')&&!fbOn){$('bt').textContent='Disconnected';setPill('err','Disconnected')}};
  stream.getVideoTracks()[0].onended=stop;
- setTimeout(()=>{if(pc&&pc.connectionState!=='connected'&&pc.connectionState!=='failed')$('bs').textContent='Still waiting. On the board, tap Allow.'},20000)};
+ setTimeout(()=>{if(!fbOn&&pc&&pc.connectionState!=='connected'&&pc.connectionState!=='failed')$('bs').textContent='Still waiting. On the board, tap Allow.'},20000)};
+
+function fbBegin(){if(fbOn)return;fbOn=true;try{pc.close()}catch(e){}clearInterval(timer);
+ $('bt').textContent='You are sharing';$('bs').textContent='School-network mode: the board updates about every 2 seconds.';setPill('live','Live on the board (school-network mode)');
+ fbV=document.createElement('video');fbV.muted=true;fbV.playsInline=true;fbV.srcObject=new MediaStream([stream.getVideoTracks()[0]]);fbV.play().catch(()=>{});fbC=document.createElement('canvas');fbStart=Date.now();fbPrev=null;fbN=0;fbKB=0;
+ fbTimer=setInterval(fbTick,2000);setTimeout(fbTick,500)}
+function fbTick(){if(!fbOn||paused)return;if(Date.now()-fbStart>45*60*1000){stop();err('Sharing stopped after 45 minutes. Start again to continue.');return}
+ const vw=fbV.videoWidth,vh=fbV.videoHeight;if(!vw||!vh)return;
+ const sc=Math.min(1,1280/vw);const w=Math.round(vw*sc),h=Math.round(vh*sc);fbC.width=w;fbC.height=h;const g=fbC.getContext('2d');g.drawImage(fbV,0,0,w,h);
+ const t=document.createElement('canvas');t.width=48;t.height=27;const tg=t.getContext('2d');tg.drawImage(fbC,0,0,48,27);const px=tg.getImageData(0,0,48,27).data;let diff=0;if(fbPrev){for(let i=0;i<px.length;i+=4)diff+=Math.abs(px[i]-fbPrev[i])+Math.abs(px[i+1]-fbPrev[i+1])+Math.abs(px[i+2]-fbPrev[i+2])}else diff=1e9;
+ if(diff<400&&Date.now()-(fbTick.last||0)<60000)return;fbPrev=px;fbTick.last=Date.now();
+ let q=0.7,u;do{u=fbC.toDataURL('image/jpeg',q);q-=0.15}while(u.length>230000&&q>0.2);
+ if(u.length>250000)return;
+ CastSig.fwrite(code,u.slice(u.indexOf(',')+1),w,h).then(()=>{fbN++;fbKB+=Math.round(u.length/1024);$('mon').textContent=w+'x'+h+' · '+fbN+' pictures · '+fbKB+' KB sent · school-network mode'}).catch(e=>{$('mon').textContent='Could not send a picture: '+(e.code||e.message)})}
+function setPill(k,t){const p=$('pill');p.className='pill '+k;p.lastChild.textContent=t}
 function monitor(){clearInterval(timer);timer=setInterval(async()=>{if(!pc)return;const st=await pc.getStats();st.forEach(r=>{if(r.type==='outbound-rtp'&&r.kind==='video'){const t=r.timestamp,b=r.bytesSent;if(lastT){const kbps=Math.round((b-lastB)*8/(t-lastT));$('mon').textContent=Math.round(r.frameWidth||0)+'x'+Math.round(r.frameHeight||0)+' · '+kbps+' kbps · '+(b/1048576).toFixed(0)+' MB sent'+(r.qualityLimitationReason&&r.qualityLimitationReason!=='none'?' · quality reduced: '+r.qualityLimitationReason:'')}lastB=b;lastT=t}})},2000)}
 $('pause').onclick=async()=>{paused=!paused;await sender.replaceTrack(paused?null:stream.getVideoTracks()[0]);$('pause').textContent=paused?'Resume':'Pause'};
-function stop(){clearInterval(timer);if(stream)stream.getTracks().forEach(t=>t.stop());if(pc)pc.close();pc=null;CastSig.end(code);$('b').style.display='none';$('a').style.display='';err('Sharing stopped.')}
+function stop(){clearInterval(timer);clearInterval(fbTimer);if(fbUn)fbUn();if(fbOn&&code)CastSig.fend(code);fbOn=false;if(stream)stream.getTracks().forEach(t=>t.stop());if(pc)pc.close();pc=null;CastSig.end(code);$('b').style.display='none';$('a').style.display='';err('Sharing stopped.')}
 $('stop').onclick=stop;
 </script></body></html>

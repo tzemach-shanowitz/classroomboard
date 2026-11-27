@@ -1,36 +1,52 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>ClassroomBoard Cast: board</title><style>*{box-sizing:border-box}body{margin:0;font:18px -apple-system,system-ui,sans-serif;background:#f5f5f7;color:#1d1d1f;min-height:100vh;display:flex;align-items:center;justify-content:center}.c{background:#fff;border-radius:22px;box-shadow:0 8px 40px #0002;padding:32px;max-width:520px;width:92%;text-align:center}h1{font-size:26px;margin:0 0 6px}p{color:#555;margin:8px 0}input{font:600 38px monospace;letter-spacing:.3em;text-align:center;width:100%;border:2px solid #ccd;border-radius:14px;padding:10px}button{font:inherit;font-weight:600;border:0;border-radius:14px;padding:14px 22px;margin:6px;background:#0a7aff;color:#fff;cursor:pointer}button.g{background:#e8e8ed;color:#1d1d1f}button.r{background:#d92d20}.s{font-size:16px;color:#666;margin-top:12px;min-height:22px}.big{font:700 72px monospace;letter-spacing:.15em}</style>
-<style>#v{position:fixed;inset:0;width:100%;height:100%;background:#000;object-fit:contain;display:none}#bar{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);display:none;background:#000b;border-radius:18px;padding:4px 8px;z-index:3;white-space:nowrap}#bar button{background:#ffffff26;padding:10px 14px;font-size:16px}#bar button.r{background:#d92d20}#mon{position:fixed;left:12px;top:8px;color:#fff9;font:13px monospace;display:none;z-index:3}</style></head><body>
-<video id="v" autoplay playsinline></video><div id="mon"></div>
-<div id="bar"><button id="fit">Fit / Fill</button><button id="hide">Hide</button><button id="mute">Sound off</button><button id="fs">Full screen</button><button class="r" id="dis">Disconnect</button></div>
-<div class="c" id="a"><h1>Share to this board</h1><p>On your computer open <b id="url"></b> and type:</p><div class="big" id="cd">······</div>
-<img id="qr" width="180" height="180" alt="" style="margin-top:6px"><p class="s" id="st">Starting…</p>
-<div id="ask" style="display:none"><p><b id="who"></b> wants to share its screen here.</p><button id="ok">Allow</button><button class="g" id="no">Decline</button></div></div>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>Share to this board</title><link rel="stylesheet" href="../cast-lib/cast.css">
+<style>#v{position:fixed;inset:0;width:100%;height:100%;background:#000;object-fit:contain;display:none}#bar{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);display:none;gap:6px;background:rgba(28,28,30,.78);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-radius:20px;padding:6px;z-index:3;white-space:nowrap;box-shadow:0 8px 30px #0006}#bar .btn{background:transparent;color:#fff;padding:10px 14px;font-size:15px;min-height:44px;border-radius:14px}#bar .btn:hover{background:#ffffff22}#bar .btn.red{background:var(--bad)}#bar svg{width:18px;height:18px;vertical-align:-4px;margin-right:6px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}#mon{position:fixed;left:14px;top:10px;color:#fffc;font:12.5px ui-monospace,Menlo,monospace;display:none;z-index:3;background:#0007;padding:4px 10px;border-radius:999px}</style></head><body>
+<video id="v" autoplay playsinline></video><img id="fi" alt="" style="position:fixed;inset:0;width:100%;height:100%;background:#000;object-fit:contain;display:none"><div id="mon"></div>
+<div id="bar"><button class="btn" id="fit"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Fit or fill</button><button class="btn" id="hide"><svg viewBox="0 0 24 24"><path d="M3 12s3.5-6 9-6 9 6 9 6-3.5 6-9 6-9-6-9-6z"/><circle cx="12" cy="12" r="2.5"/></svg>Hide screen</button><button class="btn" id="mute"><svg viewBox="0 0 24 24"><path d="M4 10v4h3l5 4V6l-5 4z"/></svg>Sound off</button><button class="btn" id="fs"><svg viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/></svg>Full screen</button><button class="btn" id="det">Details</button><button class="btn red" id="dis">Disconnect</button></div>
+<main class="card wide" id="a"><div class="badge"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2.5"/><path d="M8 20h8M12 16v4"/></svg></div>
+<h1>Show a screen here</h1><p class="sub">On your computer, open <b id="url"></b> or scan the code, then type:</p>
+<div class="digits" id="cd" aria-live="polite"><span>·</span><span>·</span><span>·</span><span>·</span><span>·</span><span>·</span></div>
+<div class="pill wait" id="pill"><span class="dot"></span><span>Starting</span></div>
+<div class="qr" style="margin-top:14px"><img id="qr" alt="QR code to open the sharing page" width="128" height="128"></div>
+<p class="err" id="st" role="status"></p>
+<div class="ask" id="ask" style="display:none"><p><b id="who"></b> wants to share its screen here.</p><div class="row" style="margin-top:0"><button class="btn pri" id="ok">Allow</button><button class="btn sec" id="no">Decline</button></div></div>
+<p class="fine">Codes work once and expire after 10 minutes.</p></main>
 <script src="../cast-lib/sig.js"></script><script>
-const $=i=>document.getElementById(i);let pc,code,unsub,pending,total=0,lastB=0,lastT=0,mon;
-const CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'}]};
+const $=i=>document.getElementById(i);let pc,code,unsub,pending,total=0,lastB=0,lastT=0,mon,fb=false,fbUn,fbCode,fbTO,fbN=0;
+var ICEX=[];try{var x=new XMLHttpRequest();x.open("GET","/cast-lib/ice.json",false);x.send();if(x.status==200){var j=JSON.parse(x.responseText);if(j.iceServers)ICEX=j.iceServers}}catch(e){}
+const CFG={iceServers:[{urls:'stun:stun.l.google.com:19302'}].concat(ICEX)};
 const enc=d=>btoa(unescape(encodeURIComponent(JSON.stringify(d))));const dec=s=>JSON.parse(decodeURIComponent(escape(atob(s))));
 function gathered(p){return new Promise(r=>{if(p.iceGatheringState==='complete')return r();p.onicegatheringstatechange=()=>p.iceGatheringState==='complete'&&r();setTimeout(r,4000)})}
 async function start(){
- $('ask').style.display='none';$('st').textContent='Getting a code…';
- if(pc)pc.close();if(unsub)unsub();
+ $('ask').style.display='none';pill('wait','Getting a code');
+ if(pc)pc.close();if(unsub)unsub();fbStop();
  pc=new RTCPeerConnection(CFG);pc.addTransceiver('video',{direction:'recvonly'});
  pc.ontrack=e=>{$('v').srcObject=e.streams[0]||new MediaStream([e.track])};
- pc.onconnectionstatechange=()=>{const s=pc.connectionState;if(s==='connected')show();else if(s==='failed'){$('st').textContent='Connection failed. This network blocks direct connections.';hideV()}else if(s==='disconnected'||s==='closed'){hideV();start()}};
+ pc.onconnectionstatechange=()=>{const s=pc.connectionState;if(s==='connected')show();else if(s==='failed'){fbGo()}else if((s==='disconnected'||s==='closed')&&!fb){hideV();start()}};
  await pc.setLocalDescription(await pc.createOffer());await gathered(pc);
- try{code=await CastSig.create(enc(pc.localDescription))}catch(e){$('st').textContent='Could not reach the pairing service: '+(e.code||e.message);return}
- $('cd').textContent=code;const u=location.origin+'/cast/';$('url').textContent=u.replace(/^https:\/\//,'');
- $('qr').src=await CastSig.qr(u+'?c='+code);$('st').textContent='Waiting for your computer…';
- unsub=CastSig.watch(code,d=>{if(!d){return}if(d.answer&&!pending){pending=d;$('who').textContent=d.name||'A computer';$('ask').style.display='';$('st').textContent=''}});
+ try{code=await CastSig.create(enc(pc.localDescription))}catch(e){pill('err','Could not reach the pairing service');$('st').textContent=String(e.code||e.message);return}
+ setCode(code);const u=location.origin+'/cast/';$('url').textContent=u.replace(/^https:\/\//,'');
+ $('qr').src=await CastSig.qr(u+'?c='+code);pill('wait','Waiting for your computer');$('st').textContent='';
+ unsub=CastSig.watch(code,d=>{if(!d){return}if(d.answer&&!pending){pending=d;$('who').textContent=d.name||'A computer';$('ask').style.display='';$('ask').scrollIntoView({block:'center'});$('st').textContent=''}});
  setTimeout(()=>{if(pc&&pc.connectionState!=='connected'&&!pending)start()},9*60*1000)}
-$('ok').onclick=async()=>{try{await pc.setRemoteDescription(dec(pending.answer));$('ask').style.display='none';$('st').textContent='Connecting…';CastSig.end(code)}catch(e){$('st').textContent='Could not start: '+e.message;pending=null}};
+$('ok').onclick=async()=>{try{await pc.setRemoteDescription(dec(pending.answer));$('ask').style.display='none';pill('wait','Connecting');fbCode=code;CastSig.end(code);clearTimeout(fbTO);fbTO=setTimeout(()=>{if(pc&&pc.connectionState!=='connected')fbGo()},15000)}catch(e){$('st').textContent='Could not start: '+e.message;pending=null}};
 $('no').onclick=()=>{pending=null;CastSig.end(code);start()};
-function show(){$('v').style.display='block';$('bar').style.display='block';$('mon').style.display='block';$('a').style.display='none';clearInterval(mon);mon=setInterval(async()=>{if(!pc)return;(await pc.getStats()).forEach(r=>{if(r.type==='inbound-rtp'&&r.kind==='video'){if(lastT)$('mon').textContent=(r.frameWidth||0)+'x'+(r.frameHeight||0)+' · '+Math.round((r.bytesReceived-lastB)*8/(r.timestamp-lastT))+' kbps · '+(r.bytesReceived/1048576).toFixed(0)+' MB';lastB=r.bytesReceived;lastT=r.timestamp}})},2000)}
-function hideV(){clearInterval(mon);lastT=0;$('v').style.display='none';$('bar').style.display='none';$('mon').style.display='none';$('a').style.display=''}
-$('fit').onclick=()=>{const v=$('v');v.style.objectFit=v.style.objectFit==='cover'?'contain':'cover'};
-$('hide').onclick=()=>{const v=$('v');const h=v.style.visibility==='hidden';v.style.visibility=h?'visible':'hidden';$('hide').textContent=h?'Hide':'Show'};
+function setCode(c){const d=$('cd');d.innerHTML='';for(const ch of c)d.append(Object.assign(document.createElement('span'),{textContent:ch}))}
+function pill(k,t){const p=$('pill');p.className='pill '+k;p.lastChild.textContent=t}
+if(new URLSearchParams(location.search).get('embed'))document.body.classList.add('embed');
+function show(){$('v').style.display='block';$('bar').style.display='block';$('a').style.display='none';clearInterval(mon);mon=setInterval(async()=>{if(!pc)return;(await pc.getStats()).forEach(r=>{if(r.type==='inbound-rtp'&&r.kind==='video'){if(lastT)$('mon').textContent=(r.frameWidth||0)+'x'+(r.frameHeight||0)+' · '+Math.round((r.bytesReceived-lastB)*8/(r.timestamp-lastT))+' kbps · '+(r.bytesReceived/1048576).toFixed(0)+' MB';lastB=r.bytesReceived;lastT=r.timestamp}})},2000)}
+function fbX(){}
+async function fbGo(){if(fb||!fbCode)return;fb=true;clearTimeout(fbTO);pill('wait','School-network mode');$('st').textContent='This network blocks direct connections. Using school-network mode instead…';
+ try{await CastSig.fcreate(fbCode)}catch(e){fb=false;pill('err','Connection failed');$('st').textContent='Could not start school-network mode: '+(e.code||e.message);return}
+ fbUn=CastSig.fwatch(fbCode,d=>{if(!d||!d.f)return;fbN++;const i=$('fi');i.src='data:image/jpeg;base64,'+d.f;if(i.style.display!=='block'){i.style.display='block';$('bar').style.display='block';$('a').style.display='none';$('st').textContent=''}$('mon').textContent=(d.w||0)+'x'+(d.h||0)+' · '+fbN+' pictures · school-network mode'});
+ setTimeout(()=>{if(fb&&!fbN){pill('err','Waiting for the computer');$('st').textContent='Nothing arrived yet. Ask the sender to stop and share again.'}},45000)}
+function fbStop(){clearTimeout(fbTO);if(fbUn){fbUn();fbUn=null}if(fb&&fbCode)CastSig.fend(fbCode);fb=false;fbN=0;fbCode=null;const i=$('fi');if(i){i.style.display='none';i.removeAttribute('src')}}
+function hideV(){fbStop();clearInterval(mon);lastT=0;$('v').style.display='none';$('bar').style.display='none';$('mon').style.display='none';$('a').style.display=''}
+$('fit').onclick=()=>{const v=fb?$('fi'):$('v');v.style.objectFit=v.style.objectFit==='cover'?'contain':'cover'};
+$('hide').onclick=()=>{const v=fb?$('fi'):$('v');const h=v.style.visibility==='hidden';v.style.visibility=h?'visible':'hidden';$('hide').textContent=h?'Hide screen':'Show screen'};
 $('mute').onclick=()=>{const v=$('v');v.muted=!v.muted;$('mute').textContent=v.muted?'Sound on':'Sound off'};
 $('fs').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{});
+$('det').onclick=()=>{const m=$('mon');m.style.display=m.style.display==='block'?'none':'block'};
 $('dis').onclick=()=>{hideV();start()};
-addEventListener('pagehide',()=>{if(code)CastSig.end(code)});
+addEventListener('pagehide',()=>{if(code)CastSig.end(code);if(fb&&fbCode)CastSig.fend(fbCode)});
 start();
 </script></body></html>

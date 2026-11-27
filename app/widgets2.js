@@ -2,9 +2,9 @@
 /* ===== More tools: traffic light, sound level, work symbols, text, stopwatch, visual timer, calendar,
    event countdown, group maker, dice, scoreboard, poll, stickers, image, video, embed, link, webcam ===== */
 (function(){
-const NEW=['traffic','sound','worksym','text','stopwatch','visual','calendar','countdown','groups','dice','scoreboard','poll','stickers','image','video','embed','link','webcam'];
-const NAMES={traffic:'Traffic light',sound:'Sound level',worksym:'Work symbols',text:'Text',stopwatch:'Stopwatch',visual:'Visual timer',calendar:'Calendar',countdown:'Event countdown',groups:'Group maker',dice:'Dice',scoreboard:'Scoreboard',poll:'Poll',stickers:'Stickers',image:'Image',video:'Video',embed:'Web page',link:'Link',webcam:'Webcam'};
-const EMO={traffic:'🚦',sound:'🔊',worksym:'🤫',text:'📝',stopwatch:'⏱️',visual:'⏳',calendar:'📅',countdown:'🎯',groups:'👥',dice:'🎲',scoreboard:'🏆',poll:'📊',stickers:'⭐',image:'🖼️',video:'🎬',embed:'🌐',link:'🔗',webcam:'📷'};
+const NEW=['traffic','sound','worksym','text','stopwatch','visual','calendar','countdown','groups','dice','scoreboard','poll','stickers','image','video','embed','link','webcam','cast'];
+const NAMES={traffic:'Traffic light',sound:'Sound level',worksym:'Work symbols',text:'Text',stopwatch:'Stopwatch',visual:'Visual timer',calendar:'Calendar',countdown:'Event countdown',groups:'Group maker',dice:'Dice',scoreboard:'Scoreboard',poll:'Poll',stickers:'Stickers',image:'Image',video:'Video',embed:'Web page',link:'Link',webcam:'Webcam',cast:'Screen share'};
+const EMO={traffic:'🚦',sound:'🔊',worksym:'🤫',text:'📝',stopwatch:'⏱️',visual:'⏳',calendar:'📅',countdown:'🎯',groups:'👥',dice:'🎲',scoreboard:'🏆',poll:'📊',stickers:'⭐',image:'🖼️',video:'🎬',embed:'🌐',link:'🔗',webcam:'📷',cast:'📡'};
 Object.assign(TOOLS,{more:'More tools'});
 IC.more='<circle cx="6" cy="6" r="1.6"/><circle cx="12" cy="6" r="1.6"/><circle cx="18" cy="6" r="1.6"/><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/><circle cx="6" cy="18" r="1.6"/><circle cx="12" cy="18" r="1.6"/><circle cx="18" cy="18" r="1.6"/>';
 const K=id=>'w2.'+id;
@@ -79,7 +79,7 @@ function countdown(){mk('countdown',{w:400,settings:()=>edit()},(b)=>{const s=ge
 
 /* 9. Group maker (uses the active class list, skips absent students) */
 function groups(){mk('groups',{w:640},(b)=>{let size=3;const out=h('div',{style:'display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;direction:ltr'});
-  const make=()=>{const names=activeList().students.filter(x=>!x.absent).map(x=>x.name);out.innerHTML='';if(!names.length){out.append(h('div',{style:'color:#667'},'No students in the active list. Add names in Settings, Students.'));return}
+  const make=()=>{const names=activeList().students.filter(x=>!x.absent).map(x=>x.name);out.innerHTML='';if(!names.length){out.append(h('div',{style:'color:#667'},'No students in the active list. Add names in Settings, Classroom, Class lists and students.'));return}
     for(let i=names.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[names[i],names[j]]=[names[j],names[i]]}
     const n=Math.max(1,Math.round(names.length/size));const G=Array.from({length:n},()=>[]);names.forEach((x,i)=>G[i%n].push(x));
     G.forEach((g,i)=>out.append(h('div',{style:'flex:1 1 170px;border:2px solid #e3e6ee;border-radius:14px;padding:8px 12px'},h('div',{style:'font-weight:800;color:#6d5efc;margin-bottom:4px'},'Group '+(i+1)),...g.map(x=>h('div',{dir:'auto',style:'font-size:20px'},x)))))};
@@ -130,7 +130,23 @@ function webcam(){mk('webcam',{w:520},(b,inst)=>{let st;const v=h('video',{autop
   inst.cleanup=()=>{try{st&&st.getTracks().forEach(t=>t.stop())}catch(e){}};
   navigator.mediaDevices.getUserMedia({video:true}).then(s=>{st=s;v.srcObject=s;v.play()}).catch(()=>{msg.textContent='No camera access. Allow it in the browser, or this board may not offer one.'});b.append(v,msg)})}
 
-const FN={traffic,sound,worksym,text,stopwatch,visual,calendar,countdown,groups,dice,scoreboard,poll,stickers,image,video,embed,link,webcam};
+function cast(){mk('cast',{w:760},(b,inst)=>{b.style.cssText+=';padding:0';
+  const can=!!(navigator.mediaDevices&&navigator.mediaDevices.getDisplayMedia);
+  const svg=p=>{const s=document.createElementNS('http://www.w3.org/2000/svg','svg');s.setAttribute('viewBox','0 0 24 24');s.style.cssText='width:30px;height:30px;stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round';s.innerHTML=p;return s};
+  const SF='-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Inter,system-ui,sans-serif';
+  const CB=location.hostname==='classroomboard.web.app'?'':'https://classroomboard.web.app';const show=()=>{b.innerHTML='';
+    const card=(ic,t,d,f,off)=>{const bt=h('button',{type:'button',disabled:off?'':null,style:'flex:1;min-width:230px;padding:26px 20px;border-radius:24px;display:flex;flex-direction:column;align-items:center;gap:8px;font:700 22px '+SF+';letter-spacing:-.01em;background:#fff;color:#1d1d1f;border:1px solid #e5e5ea;box-shadow:0 1px 2px #0001,0 10px 30px #1d1d4a14;cursor:'+(off?'default':'pointer')+';transition:transform .12s,box-shadow .12s;'+(off?'opacity:.55':''),onclick:off?null:f},
+      h('span',{style:'width:60px;height:60px;border-radius:20px;background:linear-gradient(135deg,#5b5bf0,#7a6cf5);display:flex;align-items:center;justify-content:center;box-shadow:0 8px 20px #5b5bf044;margin-bottom:4px'},svg(ic)),t,h('span',{style:'font:400 15.5px/1.4 '+SF+';color:#6e6e73;white-space:normal;max-width:230px'},d));
+      if(!off){bt.onmouseenter=()=>{bt.style.transform='translateY(-2px)'};bt.onmouseleave=()=>{bt.style.transform=''}}return bt};
+    b.append(h('div',{style:'padding:26px;background:radial-gradient(700px 400px at 10% -10%,#e9e8ff 0,transparent 60%),#f5f5f7;border-radius:0 0 12px 12px;font-family:'+SF},
+      h('div',{style:'text-align:center;margin-bottom:18px'},h('div',{style:'font:700 26px '+SF+';letter-spacing:-.02em;color:#1d1d1f'},'Screen share'),h('div',{style:'font:400 16px '+SF+';color:#6e6e73;margin-top:4px'},'Show a computer on this board, or send this screen to another board.')),
+      h('div',{style:'display:flex;gap:16px;flex-wrap:wrap'},
+        card('<path d="M12 4v11M7.5 10.5L12 15l4.500-4.500"/><path d="M5 19h14"/>','Receive','Show another computer here. This board shows a 6-digit code.',()=>open(CB+'/cast-board/?embed=1')),
+        card('<path d="M12 15V4M7.500 8.500L12 4l4.500 4.500"/><path d="M5 19h14"/>','Send',can?'Share this device\'s screen to another board.':'This browser cannot share its screen. Try Chrome, Edge or Firefox on a computer.',()=>open(CB+'/cast/?embed=1'),!can))))};
+  const open=src=>{b.innerHTML='';const bar=h('div',{style:'padding:8px 12px;background:#f5f5f7;display:flex;gap:8px;direction:ltr;font-family:'+SF},h('button',{type:'button',style:'background:#ececf1;color:#1d1d1f;border:0;border-radius:12px;padding:9px 16px;font:600 15px '+SF+';cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;min-height:40px',onclick:()=>{f.src='about:blank';show()}},'← Back'),h('a',{href:src.replace('?embed=1',''),target:'_blank',rel:'noopener',style:'background:#ececf1;color:#1d1d1f;border:0;border-radius:12px;padding:9px 16px;font:600 15px '+SF+';cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;min-height:40px'},'Open in its own tab'));
+    const f=h('iframe',{src,allow:'fullscreen; display-capture',title:'Screen share',style:'width:100%;height:min(74vh,560px);border:0;border-radius:0 0 12px 12px;background:#f5f5f7;display:block'});b.append(bar,f);inst.cleanup=()=>{try{f.src='about:blank'}catch(e){}}};
+  show()})}
+const FN={cast,traffic,sound,worksym,text,stopwatch,visual,calendar,countdown,groups,dice,scoreboard,poll,stickers,image,video,embed,link,webcam};
 window.openMore=function(){modal('More tools',b=>{b.style.cssText+=';display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;direction:ltr';
   NEW.forEach(id=>b.append(h('button',{style:'display:flex;flex-direction:column;align-items:center;gap:4px;padding:14px 6px;border-radius:16px;border:2px solid #e3e6ee;background:#fff;font-size:16px;font-weight:600;color:#223',onclick:e=>{e.currentTarget.closest('.scrim').remove();window.__more.FN[id]()}},h('span',{style:'font-size:40px;line-height:1'},EMO[id]),NAMES[id])))})};
 window.__more={FN,NEW,mk,get,put,btn,NAMES,EMO,beep};
