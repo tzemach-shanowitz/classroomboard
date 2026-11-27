@@ -5,20 +5,23 @@ const icfg=()=>Store.get('inputCfg',{compat:true});
 const setCfg=v=>Store.set('inputCfg',{...icfg(),...v});
 window.__inputCompat=()=>icfg().compat!==false;
 /* ---------- compatibility mode: patches the existing ink engine only ---------- */
-const od=Ink.down,ou=Ink.up;let lastPtr=0,swapped=null,touchId=null;
+const PALM_PX=34;const od=Ink.down,ou=Ink.up;let lastPtr=0,swapped=null,touchId=null;
 Ink.down=function(e){
   if(!__inputCompat())return od.call(this,e);
   lastPtr=Date.now();
   if(this.mode!=='write')return;
   if(this.cur)return;                       // a second finger or palm while writing is ignored
-  const eraserEnd=e.pointerType==='pen'&&((e.buttons&32)||e.button===5);
-  if(eraserEnd){swapped=this.tool;this.tool='eraser'}
+  const eraserEnd=e.pointerType==='pen'&&((e.buttons&32)||e.button===5||(e.buttons&2));
+  /* A palm, fist or the flat of a hand (a wide contact) erases, like a real eraser. A fingertip or the pen writes. */
+  const palm=!eraserEnd&&e.pointerType==='touch'&&Math.max(e.width||0,e.height||0)>=PALM_PX;
+  this.palmR=palm?Math.min(160,Math.max(e.width||0,e.height||0)/2+10):0;
+  if(eraserEnd||palm){swapped=this.tool;this.tool='eraser'}
   od.call(this,e)};
-Ink.up=function(e){ou.call(this,e);if(swapped){this.tool=swapped;swapped=null}};
+Ink.up=function(e){ou.call(this,e);this.palmR=0;if(swapped){this.tool=swapped;swapped=null}};
 /* Some boards deliver only touch or only mouse events. Pointer events normally win;
    if a touch arrives with no pointer event right before it, the touch is used instead. */
 const cv=Ink.cv;
-const fake=(t,id)=>({clientX:t.clientX,clientY:t.clientY,pointerId:id,pointerType:'touch',buttons:1,button:0,preventDefault(){}});
+const fake=(t,id)=>({clientX:t.clientX,clientY:t.clientY,pointerId:id,pointerType:'touch',width:(t.radiusX||0)*2,height:(t.radiusY||0)*2,buttons:1,button:0,preventDefault(){}});
 cv.addEventListener('touchstart',e=>{if(!__inputCompat()||Ink.mode!=='write')return;e.preventDefault();
   setTimeout(()=>{if(Date.now()-lastPtr<250||Ink.cur)return;const t=e.changedTouches[0];touchId=t.identifier;od.call(Ink,fake(t,9000))},60)},{passive:false});
 cv.addEventListener('touchmove',e=>{if(!__inputCompat()||touchId===null)return;e.preventDefault();for(const t of e.changedTouches)if(t.identifier===touchId)Ink.move(fake(t,9000))},{passive:false});
