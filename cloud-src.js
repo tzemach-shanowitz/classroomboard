@@ -196,6 +196,7 @@ onAuthStateChanged(auth,u=>{
 });
 C.inspect=async()=>{if(!C.user)return{err:'not-signed-in'};try{const snap=await getDocs(collection(db,'users',C.user.uid,'kv'));const items=snap.docs.map(d=>d.data());const g=k=>items.find(x=>x.k===k);let cfg={};try{cfg=JSON.parse((g('cfg')||{}).v||'{}')}catch(e){}return{email:C.user.email,n:items.length,latest:Math.max(0,...items.map(x=>x.t||0)),hasCfg:!!g('cfg'),hasMarker:!!g('mig.roster1'),date:cfg.clock&&cfg.clock.date,loc:cfg.loc&&cfg.loc.name,fromCache:snap.metadata.fromCache,items}}catch(e){return{err:e.code||e.message}}};
 C.pullAll=async()=>{const r=await C.inspect();if(r.err||!r.n)return r;const St=SC().Store,m=metaT();C.applying=true;let a=0;for(const x of r.items){if(String(x.k).startsWith('bak.'))continue;try{if(x.v==null)localStorage.removeItem(St.p+x.k);else localStorage.setItem(St.p+x.k,x.v);m[x.k]=x.t||Date.now();a++}catch(e){}}C.applying=false;saveMeta(m);r.applied=a;return r};
+C.sendFeatureRequest=async r=>{if(!C.user)throw new Error('signed-out');await setDoc(doc(collection(db,'featureRequests')),{text:String(r.text||'').slice(0,600),why:String(r.why||'').slice(0,600),uid:C.user.uid,t:Date.now()})};
 window.Cloud=C;
 if(window.__sc)install();else addEventListener('load',install);
 document.dispatchEvent(new Event('cloud-ready'));

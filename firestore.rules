@@ -4,6 +4,15 @@ service cloud.firestore {
     match /users/{uid}/{document=**} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
+    // Developer inbox for "Request this feature". Signed-in teachers can add one small request. Nobody can read, change or list them from the app.
+    match /featureRequests/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['text','why','uid','t'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.text is string && request.resource.data.text.size() > 0 && request.resource.data.text.size() <= 600
+        && request.resource.data.why is string && request.resource.data.why.size() <= 600
+        && request.resource.data.t is number;
+    }
     // ClassroomBoard Cast pairing. Short-lived, small, one answer per code. No listing.
     match /cast/{code} {
       allow get: if code.matches('[0-9]{6}');

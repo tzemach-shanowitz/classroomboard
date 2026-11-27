@@ -7,8 +7,8 @@ const $=q=>document.querySelector(q);
 const st=document.createElement('style');st.textContent=`
 #askp{position:fixed;left:50%;transform:translateX(-50%);z-index:70;width:min(600px,calc(100vw - 24px));background:rgba(250,250,252,.97);color:#1c1c1e;border-radius:22px;box-shadow:0 18px 50px rgba(0,0,0,.35);padding:14px 14px 12px;font:16px -apple-system,Inter,system-ui,sans-serif;direction:ltr;text-align:left;display:flex;flex-direction:column;gap:10px;-webkit-backdrop-filter:blur(24px);backdrop-filter:blur(24px)}
 #askp .ar{display:flex;gap:8px;align-items:center}
-#askp input{flex:1;min-width:0;font:inherit;font-size:18px;padding:13px 14px;border:1.5px solid #d6d6dc;border-radius:14px;background:#fff;color:#1c1c1e;outline:none}
-#askp input:focus{border-color:#6858f8}
+#askp input,#askp textarea{flex:1;min-width:0;font:inherit;font-size:18px;padding:13px 14px;border:1.5px solid #d6d6dc;border-radius:14px;background:#fff;color:#1c1c1e;outline:none}
+#askp input:focus,#askp textarea:focus{border-color:#6858f8}
 #askp button{font:inherit;cursor:pointer;border:0;border-radius:14px;min-height:48px;padding:0 16px;font-weight:600;background:#ececf0;color:#1c1c1e}
 #askp button.pri{background:#6858f8;color:#fff}
 #askp button.mic{width:52px;padding:0;font-size:22px}
@@ -195,37 +195,58 @@ function apply(changes){const msgs=[];const sn=snap();for(const c of changes)app
 let dirty=false,saved=false;
 
 /* ---------- panel ---------- */
-let panel=null,rec=null;
+let panel=null,rec=null,draft=null,pendingEdit=null;
 function layout(){if(!panel)return;const t=cfg.toolbar;panel.style.top=panel.style.bottom='auto';if(t.pos==='top')panel.style.top=(tbH()+10)+'px';else panel.style.bottom=(t.pos==='bottom'?tbH()+14:20)+'px'}
 function close(){if(rec){try{rec.stop()}catch(e){}rec=null}if(panel){panel.remove();panel=null}}
 function open(){if(panel){close();return}
-  const input=h('input',{type:'text',placeholder:'What would you like to change?','aria-label':'What would you like to change?',enterkeyhint:'go',autocomplete:'off',spellcheck:'false'});
+  const input=h('textarea',{rows:'1',placeholder:'What would you like to change?','aria-label':'What would you like to change?',enterkeyhint:'go',autocomplete:'off',spellcheck:'false',style:'resize:none;max-height:140px'});
+  const grow=()=>{input.style.height='auto';input.style.height=Math.min(140,input.scrollHeight)+'px'};input.addEventListener('input',grow);
   const msg=h('div',{class:'am'});
   const actions=h('div',{class:'ar',style:'flex-wrap:wrap'});
   const mic=h('button',{class:'mic','aria-label':'Tap to speak',title:'Tap to speak'},'🎤');
   const go=h('button',{class:'pri',onclick:()=>run()},'Go');
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  let pend=null;
+  let pend=null,reqPending=null;
+  const MT=window.MyTools;
   const setMsg=(lines,bad)=>{msg.className='am'+(bad?' bad':'');msg.innerHTML='';if(typeof lines==='string')msg.textContent=lines;else{const u=h('ul',{});lines.forEach(l=>u.append(h('li',{},l)));msg.append(u)}};
   const showActions=()=>{actions.innerHTML='';
     if(history.length)actions.append(h('button',{onclick:()=>{const sn=history.pop();restore(sn);dirty=history.length>0;setMsg('Undone.');showActions()}},'Undo'));
     if(dirty)actions.append(h('button',{class:'pri',onclick:()=>{S.saveCfg();for(const id in Widgets.open)Widgets.save&&Widgets.save(id);saved=true;dirty=false;setMsg('Saved as your default for future classes.');showActions()}},'Save as my default'));
     actions.append(h('button',{onclick:close},'Close'))};
+  const toolActions=(extra)=>{actions.innerHTML='';
+    actions.append(h('button',{class:'pri',onclick:()=>{const d=draft;draft=null;setMsg('Using it now. It stays on the board until you close it. It is not saved.');showActions()}},'Use now'),
+      h('button',{onclick:()=>{const sv=MT.saveTool(draft);draft=sv;setMsg('Saved to My Tools. Find it in Library > My Tools.');actions.innerHTML='';actions.append(h('button',{class:'pri',onclick:()=>{MT.setPinned(sv,true);setMsg('Pinned to the toolbar.');draft=null;showActions()}},'Pin to toolbar'),h('button',{onclick:()=>{draft=null;showActions()}},'Not now'),h('button',{onclick:close},'Close'))}},'Save to My Tools'),
+      h('button',{onclick:()=>{if(draft){MT.closeTool(draft);draft=null}setMsg('Preview closed.');showActions()}},'Discard'))};
+  const askRequest=(text)=>{reqPending=text;input.value='';grow();input.placeholder='Why would this help? (optional)';setMsg('I can\u2019t build that one yet. Tell me why you would want it and I will send it to the developer.',false);actions.innerHTML='';
+    actions.append(h('button',{class:'pri',onclick:()=>sendReq()},'Send request'),h('button',{onclick:()=>{reqPending=null;input.placeholder='What would you like to change?';setMsg('');showActions()}},'Cancel'))};
+  async function sendReq(){const t=reqPending;if(!t)return;const why=input.value.trim();reqPending=null;input.value='';input.placeholder='What would you like to change?';grow();
+    let r='saved';try{r=await MT.request(t,why)}catch(e){}
+    setMsg(r==='sent'?'Sent to the developer. Thank you.':'Saved. It will be sent to the developer once you are signed in (Settings > Account).');showActions()}
   function run(){const q=input.value.trim();if(!q)return;if(rec){try{rec.stop()}catch(e){}}
+    if(reqPending){sendReq();return}
+    if(MT){
+      if(draft){const notes=MT.refine(q,draft);if(notes){MT.openTool(draft);setMsg(notes);toolActions();input.value='';grow();return}}
+      const b=MT.parseBuild(q);
+      if(b&&b.unsupported){askRequest(q);return}
+      if(b){draft=b;MT.openTool(draft);const n=b.items.length;setMsg(['Here is a preview on the board: '+b.name+', '+b.secs+' seconds per word'+(n?', '+n+' words.':', no words yet.'),n?'Say what to change, for example "make the words bigger" or "30 seconds instead". Then Use now or Save to My Tools.':'Paste your words into this box as "new list: ..." or tap the gear on the tool.']);toolActions();input.value='';grow();return}
+      const ol=q.toLowerCase().match(/^(?:open|start|run|show|launch)\s+(?:my\s+)?(.+)$/);
+      if(/^(open |show )?(my tools|saved tools|my tool list)$/i.test(q.trim())&&window.driveFolders){close();driveFolders('library');return}
+      if(ol){const f=MT.find(ol[1].replace(/^tool\s+/,''));if(f){MT.openTool(f);setMsg('Opened '+f.name);showActions();input.value='';return}}
+    }
     const r=interpret(q);
+    if(r.unsupported.length&&r.unsupported[0].why==='a new tool'&&!r.changes.length){askRequest(q);return}
     if(r.answer){setMsg(r.answer);actions.innerHTML='';actions.append(h('button',{class:'pri',onclick:()=>{const m=apply(validate(r.apply));setMsg(m);showActions()}},'Apply this'),h('button',{onclick:()=>{setMsg('');showActions()}},'Not now'));return}
     const ch=validate(r.changes);
     if(ch.length===1&&ch[0].op==='undo'){const sn=history.pop();if(sn){restore(sn);dirty=history.length>0;setMsg('Undone.')}else setMsg('Nothing to undo yet.');showActions();return}
     let lines=[];if(ch.length)lines=apply(ch.filter(c=>c.op!=='undo'));
     lines=lines.concat(r.notes);
     if(r.unsupported.length){const first=r.unsupported[0];
-      if(first.why==='a new tool'){lines.push('I can\u2019t build brand-new tools here yet. You can send this as a request.')}
-      else lines.push('I did not understand: \u201C'+first.text+'\u201D.');}
+      lines.push('I did not understand: \u201C'+first.text+'\u201D.');}
     if(!lines.length)lines.push('I did not understand that. Try "make the timer bigger" or "hide the wheel".');
     setMsg(lines,!ch.length&&!!r.unsupported.length);showActions();
-    if(r.unsupported.length)actions.insertBefore(h('button',{onclick:()=>{requestFeature(q);setMsg('Request saved. Thank you.');showActions()}},'Request this feature'),actions.firstChild);
+    if(r.unsupported.length)actions.insertBefore(h('button',{onclick:()=>askRequest(q)},'Request this feature'),actions.firstChild);
     if(ch.length)input.value=''}
-  input.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();run()}else if(e.key==='Escape')close();e.stopPropagation()});
+  input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();run()}else if(e.key==='Escape')close();e.stopPropagation()});
   input.addEventListener('keyup',e=>e.stopPropagation());
   if(SR){mic.onclick=()=>{if(rec){try{rec.stop()}catch(e){}return}
       try{rec=new SR();rec.lang=(navigator.language||'en-US');rec.interimResults=true;rec.continuous=false;
@@ -237,10 +258,11 @@ function open(){if(panel){close();return}
   else{mic.disabled=true;mic.style.opacity=.4;mic.title='This browser has no speech input. Type instead.'}
   panel=h('div',{id:'askp',role:'dialog','aria-label':'Ask the Board'},h('div',{class:'ar'},input,mic,go,h('button',{class:'x',onclick:close,'aria-label':'Close'},'\u2715')),msg,actions);
   document.body.append(panel);layout();showActions();
-  setMsg(history.length?'':'Try: "make the timer bigger", "hide the wheel", "put my slides first", or "make the board simpler".');
+  if(pendingEdit&&MT){draft=Object.assign({},pendingEdit);pendingEdit=null;MT.openTool(draft);setMsg(['Editing '+draft.name+'.','Say what to change, for example "make the words bigger" or "new list: ...", then Save to My Tools.']);toolActions();input.focus&&0}
+  else setMsg(history.length?'':'Try: "make the timer bigger", "hide the wheel", "put my slides first", or "make the board simpler".');
   setTimeout(()=>{try{input.focus()}catch(e){}},50)}
 function requestFeature(text){const L=S.Store.get('askInbox',[]);L.push({text,at:new Date().toISOString(),status:'new'});S.Store.set('askInbox',L)}
 /* AI backend: OFF until a server and key exist. Limit is read from the server later so a pro tier can raise it; no payments here. */
 const AI={enabled:false,endpoint:'',dailyLimit:20};
-window.AskBoard={AI,toggle:open,open,close,interpret,validate};
+window.AskBoard={AI,editTool:s=>{pendingEdit=s;if(panel)close();open()},toggle:open,open,close,interpret,validate};
 })();
