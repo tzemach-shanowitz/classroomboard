@@ -35,7 +35,8 @@ const saveCfg=()=>Store.set('cfg',cfg);
 
 /* ---- icons ---- */
 const IC={
-ask:'<path d="M4 5h16v11H9l-5 4z"/><path d="M12 7.5v5M9.5 10h5"/>',
+ask:'<text x="12" y="16.4" text-anchor="middle" font-size="11.5" font-weight="800" fill="currentColor" stroke="none" font-family="-apple-system,Inter,Arial,sans-serif">AI</text>',
+  mytool:'<path d="M14.7 6.3a4 4 0 0 0-5 5L4 17v3h3l5.7-5.7a4 4 0 0 0 5-5l-2.4 2.4-2.3-.7-.7-2.3z"/>',
 home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
 whiteboard:'<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 21l4-4 4 4"/><path d="M7 12c2-4 3 2 5-1s3 1 5-2"/>',
 timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/>',
@@ -61,8 +62,8 @@ trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14"/>',eraser:'<path d="M3 17l9-
 pen:'<path d="M4 20l1-4L17 4l3 3L8 19z"/>',hl:'<path d="M9 3l6 6-8 8-4 1 1-4z"/><path d="M3 21h18"/>',
 touch:'<path d="M9 11V5a2 2 0 014 0v6l5 1v4a6 6 0 01-6 6h-1a6 6 0 01-5-3l-2-4a2 2 0 013-1z"/>'
 };
-const svgI=n=>`<svg viewBox="0 0 24 24">${IC[n]||''}</svg>`;
-const svgS=(n,px=26)=>`<svg viewBox="0 0 24 24" style="width:${px}px;height:${px}px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round">${IC[n]||''}</svg>`;
+const svgI=n=>`<svg viewBox="0 0 24 24">${IC[n]||(String(n).startsWith('mt_')?IC.mytool:'')}</svg>`;
+const svgS=(n,px=26)=>`<svg viewBox="0 0 24 24" style="width:${px}px;height:${px}px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round">${IC[n]||(String(n).startsWith('mt_')?IC.mytool:'')}</svg>`;
 
 /* ---- date helpers ---- */
 const pad=n=>String(n).padStart(2,'0');
@@ -447,6 +448,7 @@ function pickerSettings(){modal('Name picker settings',(b,c)=>{const draw=()=>{b
 /* ---- library / presentations: saved links for now (Google Drive browsing = next step) ---- */
 function openLinks(kind){const key=kind==='library'?'libLinks':'presLinks';const title=kind==='library'?'Teaching library':'Presentations';
   modal(title,(b,c)=>{const draw=()=>{b.innerHTML='';const L=Store.get(key,[]);
+   if(window.MyTools&&kind==='library'){const mt=MyTools.section(c);if(mt)b.append(mt)}
    b.append(driveCard(c,kind),h('div',{class:'lbl'},'Saved items and links'));
    const g=h('div',{class:'libgrid'});L.forEach((x,i)=>g.append(h('div',{class:'libcard'},h('div',{onclick:()=>{c();openLink(x)}},h('div',{class:'ic'},x.url.includes('presentation')?'🎞️':x.url.includes('folders')?'📁':'📄'),h('div',{dir:'auto',style:'font-size:20px;margin-top:6px'},x.title||x.url)),h('div',{class:'row',style:'justify-content:center'},pill('Edit',()=>ask('Title',x.title,t=>ask('Link',x.url,u=>{if(u){x.title=t;x.url=u;Store.set(key,L);draw()}}))),pill('✕',()=>sure('Remove this link?',()=>{L.splice(i,1);Store.set(key,L);draw()}),'danger')))));
    const ti=h('input',{class:'inp',placeholder:'Title',style:'width:220px',dir:'auto'}),ui=h('input',{class:'inp',placeholder:'Paste link',style:'flex:1',dir:'ltr'});
@@ -499,7 +501,8 @@ const S={
 /* ---- toolbar ---- */
 let hideT=null;
 function kitToggle(id){const M=window.__more;if(!M||!M.FN[id])return;if(Widgets.open[id])Widgets.close(id);else M.FN[id]()}
-function renderToolbar(){const t=cfg.toolbar,tb=$('#toolbar');for(const id of DEF.toolbar.order)if(!t.order.includes(id))t.order.splice(Math.max(0,t.order.indexOf('settings')),0,id);if(!t.order.includes('ask')){const i=t.order.indexOf('more');t.order.splice(i<0?Math.max(0,t.order.indexOf('settings')):i,0,'ask');if(LEGACY&&!cfg.askAdded){cfg.askAdded=1;t.hidden=(t.hidden||[]).concat('ask');try{saveCfg()}catch(e){}}}const off=tb.dataset.off==='1';tb.innerHTML='';tb.className='glass'+(t.pos==='top'?' top':t.pos==='left'?' left':t.pos==='right'?' right':'')+(off?' off':'');const _u=cfg.ui||{};tb.classList.toggle('lab',!!_u.labels);document.documentElement.style.setProperty('--tb-size',(t.size*(window.__uis||1))+'px');document.documentElement.style.setProperty('--tb-op',t.opacity);
+function renderToolbar(){const t=cfg.toolbar,tb=$('#toolbar');for(const id of DEF.toolbar.order)if(!t.order.includes(id))t.order.splice(Math.max(0,t.order.indexOf('settings')),0,id);if(!t.order.includes('ask')){const i=t.order.indexOf('more');t.order.splice(i<0?Math.max(0,t.order.indexOf('settings')):i,0,'ask');}
+  if(LEGACY&&!cfg.askShown){cfg.askShown=1;t.order=t.order.filter(x=>x!=='ask').concat('ask');t.hidden=(t.hidden||[]).filter(x=>x!=='ask');try{saveCfg()}catch(e){}}const off=tb.dataset.off==='1';tb.innerHTML='';tb.className='glass'+(t.pos==='top'?' top':t.pos==='left'?' left':t.pos==='right'?' right':'')+(off?' off':'');const _u=cfg.ui||{};tb.classList.toggle('lab',!!_u.labels);document.documentElement.style.setProperty('--tb-size',(t.size*(window.__uis||1))+'px');document.documentElement.style.setProperty('--tb-op',t.opacity);
   const hd=$('#handle');hd.dataset.pos=t.pos;if(t.pos==='left'||t.pos==='right'){hd.style.bottom='';hd.style.top=''}else{hd.style.bottom=t.pos==='top'?'auto':'6px';hd.style.top=t.pos==='top'?'6px':'auto'}
   const acts={home:()=>resetScreen(),whiteboard:()=>App.wb?exitWhiteboard():enterWhiteboard(),timer:()=>Widgets.open.timer?Widgets.close('timer'):openTimer(),schedule:()=>Widgets.open.schedule?Widgets.close('schedule'):openSchedule(),supplies:()=>Widgets.open.supplies?Widgets.close('supplies'):openSupplies(),
    library:()=>!LEGACY?driveFolders('library'):Store.get('driveSimple',true)?driveBrowser((window.__PERSONAL||{}).libFolder||'root','library','PDFs'):openLinks('library'),presentations:()=>!LEGACY?driveFolders('pres'):Store.get('driveSimple',true)?driveBrowser((window.__PERSONAL||{}).presFolder||'root','pres','Slideshows'):openLinks('pres'),picker:()=>Widgets.open.picker?Widgets.close('picker'):openPicker(),wheel:()=>Widgets.open.wheel?Widgets.close('wheel'):openWheel(),behavior:()=>Widgets.open.behavior?Widgets.close('behavior'):openBehavior(),audio:()=>Widgets.open.audio?Widgets.close('audio'):openAudio(),anno:()=>{if(Ink.mode==='write')Ink.setMode('view');else{if(!App.wb&&!Ink.ctxKey)Ink.ctxKey='anno.home';Ink.visible=true;Ink.setMode('write')}},more:()=>openMore(),cast:()=>kitToggle('cast'),traffic:()=>kitToggle('traffic'),sound:()=>kitToggle('sound'),text:()=>kitToggle('text'),ask:()=>window.AskBoard&&AskBoard.toggle(),settings:()=>openSettings(),full:()=>{document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen().catch(()=>{})}};
@@ -510,7 +513,7 @@ function renderToolbar(){const t=cfg.toolbar,tb=$('#toolbar');for(const id of DE
   if(LEGACY&&!cfg.doneOff){cfg.doneOff=1;if(cfg.labels&&/צייט איז אויס/.test(cfg.labels.done||''))cfg.labels.done=''}
   if(LEGACY&&!cfg.behShown){cfg.behShown=1;if(!t.order.includes('behavior')){const i=t.order.indexOf('more');t.order.splice(i<0?t.order.length:i,0,'behavior')}t.hidden=(t.hidden||[]).filter(x=>x!=='behavior');try{saveCfg()}catch(e){}}
   if(LEGACY&&!t.order.includes('audio')){const i=t.order.indexOf('anno');t.order.splice(i<0?t.order.length:i,0,'audio')}
-  for(const id of t.order){if(t.hidden.includes(id))continue;{const nm=window.__t?window.__t(TOOLS[id]):TOOLS[id];const b=h('button',{class:'tbi'+(_u.labels?' lab':''),'data-id':id,title:nm,'aria-label':nm,onclick:()=>{Audio_.unlock();acts[id]();toolbarState();bump()},html:svgI(id)});if(_u.labels)b.append(h('span',{class:'tl'},nm));tb.append(b)}}
+  for(const id of t.order){if(t.hidden.includes(id))continue;{const nm=window.__t?window.__t(TOOLS[id]):TOOLS[id];const b=h('button',{class:'tbi'+(_u.labels?' lab':''),'data-id':id,title:nm,'aria-label':nm,onclick:()=>{Audio_.unlock();(acts[id]||(()=>window.MyTools&&MyTools.open(String(id).slice(3))))();toolbarState();bump()},html:svgI(id)});if(_u.labels)b.append(h('span',{class:'tl'},nm));tb.append(b)}}
   toolbarState()}
 function toolbarState(){const on={whiteboard:!!App.wb,timer:!!Widgets.open.timer,schedule:!!Widgets.open.schedule,supplies:!!Widgets.open.supplies,picker:!!Widgets.open.picker,traffic:!!Widgets.open.traffic,cast:!!Widgets.open.cast,sound:!!Widgets.open.sound,text:!!Widgets.open.text,wheel:!!Widgets.open.wheel,behavior:!!Widgets.open.behavior,audio:!!Widgets.open.audio,anno:Ink.mode==='write'&&!App.wb};document.querySelectorAll('#toolbar .tbi[data-id]').forEach(e=>e.classList.toggle('active',!!on[e.dataset.id]))}
 function gearSync(){document.body.classList.toggle('nogear',!cfg.toolbar.hidden.includes('settings'))}

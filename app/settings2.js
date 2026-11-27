@@ -557,7 +557,7 @@ const INDEX=[
  {n:'Backup and restore',k:'export download delete data',c:'privacy',r:'backup'},{n:'Microphone and camera',k:'permissions privacy',c:'privacy'},
  {n:'SMART Board pen and touch',k:'marker finger compatibility eraser',c:'advanced',r:'input'},{n:'Input test',k:'diagnostic pointer touch pen',c:'advanced',r:'diag'},{n:'Restore default settings',k:'reset',c:'advanced'}
 ];
-applyUi();window.__applyUi=applyUi;
+applyUi();window.__applyUi=applyUi;window.__setContentLang=setContentLang;
 window.scheduleEditor=d=>{schedDate=d||dayKey();openSettings2('schedule')};window.scheduleMenu=window.scheduleEditor;window.pickDup=window.pickTmpl=window.scheduleArchive=window.scheduleEditor;
 window.openSettings=openSettings2;
 if(window.__sc)window.__sc.openSettings=openSettings2;

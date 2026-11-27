@@ -23,7 +23,7 @@ const st=document.createElement('style');st.textContent=`
 const h=(t,a,...k)=>{const e=document.createElement(t);for(const x in a||{})x==='class'?e.className=a[x]:x.startsWith('on')?e[x]=a[x]:e.setAttribute(x,a[x]);k.flat().forEach(c=>c!=null&&e.append(c.nodeType?c:document.createTextNode(c)));return e};
 
 /* ---------- vocabulary ---------- */
-const TOOLWORDS={whiteboard:['whiteboard','white board','board page'],timer:['timer','countdown','clock timer'],picker:['name picker','picker','randomizer','random name','who is next','next student'],traffic:['traffic light','traffic'],sound:['sound level','sound meter','noise','sound'],text:['text box','text'],schedule:['schedule','daily schedule','agenda'],supplies:['supplies'],library:['library','pdfs','pdf','files'],presentations:['slides','slideshows','slideshow','presentations','presentation','slide'],wheel:['wheel','spinner','spin the wheel'],behavior:['behavior','stars','behaviour'],anno:['marker','pen','highlighter','write on screen','draw','annotate','annotation'],full:['full screen','fullscreen'],home:['home','reset'],cast:['screen share','cast','share screen'],more:['more'],ask:['ask the board','assistant'],audio:['audio','mincha']};
+const TOOLWORDS={whiteboard:['whiteboard','white board','board page'],timer:['timer','countdown','clock timer'],picker:['name picker','picker','randomizer','random name','who is next','next student'],traffic:['traffic light','traffic'],sound:['sound level','sound meter','noise','sound'],text:['text box','text'],schedule:['schedule','daily schedule','agenda','calendar','timetable','day plan','lesson plan'],supplies:['supplies'],library:['library','pdfs','pdf','files'],presentations:['slides','slideshows','slideshow','presentations','presentation','slide'],wheel:['wheel','spinner','spin the wheel'],behavior:['behavior','stars','behaviour'],anno:['marker','pen','highlighter','write on screen','draw','annotate','annotation'],full:['full screen','fullscreen'],home:['home','reset'],cast:['screen share','cast','share screen'],more:['more'],ask:['ask the board','assistant'],audio:['audio','mincha']};
 const WIDGETIDS=['timer','picker','traffic','sound','text','schedule','supplies','wheel','behavior','audio','cast'];
 const names=[];for(const id in TOOLWORDS)TOOLWORDS[id].forEach(w=>names.push([w,id]));names.sort((a,b)=>b[0].length-a[0].length);
 const findTools=t=>{const out=[];let s=' '+t+' ';const hits=[];for(const[w,id]of names){const re=new RegExp('(^|[^a-z])'+w.replace(/ /g,'\\s+')+'s?(?![a-z])','g');let m;while((m=re.exec(s))){hits.push([m.index,id,m.index+m[0].length]);}}
@@ -32,6 +32,44 @@ const SIMPLE=['whiteboard','timer','picker','anno','settings','ask'];
 const WHERE=[['top right','tr'],['top left','tl'],['bottom right','br'],['bottom left','bl'],['upper right','tr'],['upper left','tl'],['lower right','br'],['lower left','bl'],['top','t'],['bottom','b'],['left','l'],['right','r'],['center','c'],['middle','c'],['corner','tr']];
 const whereOf=t=>{for(const[w,c]of WHERE)if(t.includes(w))return c;return null};
 const factor=t=>/\b(much|way|a lot|huge|very)\b/.test(t)?1.5:/\b(a bit|a little|slightly|bit)\b/.test(t)?1.15:1.3;
+
+
+/* settings that are not toolbar/widget layout: language, theme, date, time format, labels, size */
+const LANGS=[['yiddish','yi'],['yidish','yi'],['יידיש','yi'],['אידיש','yi'],['hebrew','he'],['ivrit','he'],['עברית','he'],['english','en'],['אנגלית','en']];
+const langOf=t=>{for(const[w,l]of LANGS)if(t.includes(w))return l;return null};
+const COLORS={blue:'#0a84ff',purple:'#7d5cff',violet:'#7d5cff',green:'#1fa35b',orange:'#ff8a1f',pink:'#e5487f',red:'#e5487f',gray:'#6e6e73',grey:'#6e6e73'};
+function settingsClause(c,res){const T=c,ch=res.changes;
+  const lang=langOf(T);
+  if(lang&&/\b(language|switch|change|set|use|speak|translate|make|turn|show|in)\b|עברית|יידיש|אנגלית/.test(T)&&!/\bdate\b/.test(T)){
+    const stu=/\b(student|students|kids|children|class|classroom|pupils|wording|headings|messages)\b/.test(T);
+    const both=/\b(everything|all of it|whole|entire|board)\b/.test(T);
+    if(stu||both)ch.push({op:'content_lang',lang});
+    if(!stu||both)ch.push({op:'ui_lang',lang});
+    return true}
+  if(/\blanguage\b/.test(T)){res.notes.push('Which language? Say "switch to Hebrew", "Yiddish" or "English".');return true}
+  if(/\b(dark mode|night mode|dark theme|dark screen)\b|\b(use|switch to|make it|turn on) dark\b/.test(T)&&!/background|wallpaper/.test(T)){ch.push({op:'ui_theme',v:'dark'});return true}
+  if(/\b(light mode|day mode|light theme|bright mode)\b|\b(use|switch to) light\b/.test(T)&&!/background|wallpaper/.test(T)){ch.push({op:'ui_theme',v:'light'});return true}
+  if(/\b(auto|automatic|system) (mode|theme)\b|\bmatch (my|the) (device|system)\b/.test(T)){ch.push({op:'ui_theme',v:'system'});return true}
+  if(/\b(accent|button|highlight|theme) colou?r\b|\bcolou?r (of )?(the )?(buttons?|accent)\b/.test(T)||/\bmake (the )?(buttons?|accent) /.test(T)){for(const k in COLORS)if(T.includes(k)){ch.push({op:'ui_accent',v:COLORS[k]});return true}res.notes.push('Colors I can use: blue, purple, green, orange, pink or gray.');return true}
+  if(/\b(menus?|settings|interface|everything|screen|buttons?|text|ui)\b.*\b(bigger|larger|huge|easier to (see|read|tap))\b|\bsmart ?board\b.*\b(bigger|larger)\b|\bmake (everything|it all) (bigger|larger)\b/.test(T)&&!/toolbar|bottom bar|\bbar\b/.test(T)&&!findTools(T).filter(x=>x!=='settings'&&x!=='text').length){ch.push({op:'ui_size',v:'lg'});return true}
+  if(/\b(menus?|settings|interface|everything)\b.*\b(smaller|tiny|compact)\b|\bmake (everything|it all) smaller\b/.test(T)){ch.push({op:'ui_size',v:'sm'});return true}
+  if(/\b(standard|normal|default|regular) (size|sizes)\b|\bsize back to normal\b/.test(T)&&!/timer|clock/.test(T)){ch.push({op:'ui_size',v:'std'});return true}
+  if(/\b(tool |toolbar |button |icon )?labels?\b|\bnames under\b|\bwords under\b/.test(T)&&/\b(show|add|turn on|display|with|need|want|see)\b|\b(hide|remove|turn off|without|no)\b/.test(T)){ch.push({op:'ui_labels',on:!/\b(hide|remove|turn off|without|no|don.?t)\b/.test(T)});return true}
+  // date line on the clock
+  if(/\b(dates?|hebrew date|jewish date|english date|gregorian|secular date|day of the week)\b/.test(T)&&!/\bschedule\b/.test(T)){
+    let v=null;
+    if(/\b(hide|remove|turn off|no|without|get rid of|dont show|do not show)\b/.test(T)&&!/\b(only|just)\b/.test(T))v='none';
+    else if(/\b(both|two dates|hebrew and english|english and hebrew)\b/.test(T))v='both';
+    else if(/\b(english|regular|normal|gregorian|secular|civil|standard|regular)\b/.test(T))v='std';
+    else if(/\b(hebrew|jewish)\b/.test(T))v='heb';
+    else if(/\b(show|turn on|bring back|add|display|put back)\b/.test(T))v=(cfg.clock.date&&cfg.clock.date!=='none')?cfg.clock.date:'std';
+    if(v){ch.push({op:'clock_date',v});if(/\b(show|turn on|bring back|add|display|put back|only|just)\b/.test(T)&&!cfg.clock.visible)ch.push({op:'clock_vis',on:true});return true}
+    res.notes.push('For the date I can show the Hebrew date, the English date, both, or hide it.');return true}
+  if(/\b(24 ?-?(hour|hr)|military time|24h)\b/.test(T)){ch.push({op:'clock_h12',on:false});return true}
+  if(/\b(12 ?-?(hour|hr)|12h|regular time|normal time)\b/.test(T)&&!/\bam\b/.test(T)){ch.push({op:'clock_h12',on:true});return true}
+  if(/\b(am ?\/? ?pm|a\.m\.|am and pm)\b/.test(T)){ch.push({op:'clock_ampm',on:!/\b(hide|remove|turn off|no|without|dont|don.?t)\b/.test(T)});return true}
+  if(/\b(seconds)\b/.test(T)&&/\bclock\b/.test(T)){res.notes.push('The clock shows hours and minutes. Seconds are not available yet.');return true}
+  return false}
 
 /* ---------- interpreter: text -> structured changes ---------- */
 let lastTarget=null;
@@ -43,9 +81,10 @@ function interpret(raw){
   if(/\b(simpler|simple|less cluttered|too many buttons|clean(er)?)\b/.test(text)&&/(\?|how|can you|what)/.test(text)&&!/^(make|put|hide)/.test(text)){
     res.answer='A simpler board shows only the tools you use most. I can keep Whiteboard, Timer, Name picker and Marker on the bar, hide the rest, and keep Settings and Ask the Board. Nothing is deleted. You can bring any tool back.';
     res.apply=[{op:'tb_only',ids:SIMPLE}];return res}
+  if(/^(make|put|set|can you make|please make|i want|i need)\b.*\b(board|screen|it)\b.*\b(simpler|simple|cleaner|less cluttered|easier)\b/.test(text)&&!/\bhow\b/.test(text)){res.changes.push({op:'tb_only',ids:SIMPLE});return res}
   if(/\b(make me|build me|create (me )?a|i wish|can you build|new tool|a game|spelling|quiz|bingo)\b/.test(text)&&!/\b(make (it|this|the|my) )/.test(text)){
     res.unsupported.push({text:raw,why:'a new tool'});return res}
-  const clauses=text.split(/\s*(?:,|;|\.|\bthen\b|\band also\b|\band then\b|\bplus\b|\band\b(?= (?:make|put|hide|show|move|use|turn|set|bring)))\s*/).filter(Boolean);
+  const clauses=text.split(/\s*(?:,|;|\.|\bthen\b|\band also\b|\band then\b|\bplus\b|\band\b(?= (?:make|put|hide|show|move|use|turn|set|bring))|\band\b(?= (?:the|my) [a-z ]{2,20}? (?:bigger|smaller|larger)\b))\s*/).filter(Boolean);
   // "put my A, B and C on the bottom bar" style lists can be broken by the comma split, so handle them first
   const list=text.match(/(?:put|keep|show|have|use)\s+(?:only\s+)?(?:my\s+)?(.+?)\s+(?:on|in)\s+(?:the\s+)?(?:bottom\s+|top\s+)?(?:bar|toolbar)/);
   let handledList=false;
@@ -55,8 +94,9 @@ function interpret(raw){
     const tools=findTools(c);let tgt=tools[0]||null;
     if(/\b(it|this|that)\b/.test(c)&&!tgt)tgt=lastTarget;
     if(tgt&&!/\b(other|rest)\b/.test(c))lastTarget=tgt;
-    let done=false;
-    if(/\b(other|rest|everything else)\b/.test(c)&&/\b(hide|remove)\b/.test(c)){if(!handledList)res.notes.push('Say which tools to keep, for example "keep the timer and slides, hide the rest".');done=true}
+    let done=settingsClause(c,res);
+    if(done){}else if(/\b(other|rest|everything else)\b/.test(c)&&/\b(hide|remove)\b/.test(c)){if(!handledList)res.notes.push('Say which tools to keep, for example "keep the timer and slides, hide the rest".');done=true}
+    else if(tools.length&&/\b(only|just)\b/.test(c)&&/\b(show|keep|have|want|need|see|use)\b/.test(c)&&!/\bbar\b.*\b(top|bottom|left|right)\b.*\bmove\b/.test(c)){res.changes.push({op:'tb_only',ids:tools.concat(['settings','ask'])});done=true}
     else if(/\bhide (the )?(toolbar|bar)\b|\bhide .*until i need/.test(c)){res.changes.push({op:'tb_hide_now'});res.changes.push({op:'tb_autohide',on:true});done=true}
     else if(/\b(keep|pin) (the )?(toolbar|bar)\b.*\b(visible|open|showing)|\bpin (the )?(toolbar|bar)/.test(c)){res.changes.push({op:'tb_autohide',on:false});done=true}
     else if(/\btoolbar|\bbottom bar\b|\bbuttons?\b/.test(c)&&/\b(bigger|larger|smaller)\b/.test(c)&&!tools.length){res.changes.push({op:'tb_size',f:/smaller/.test(c)?1/factor(c):factor(c)});done=true}
@@ -81,8 +121,8 @@ function interpret(raw){
     else if(tgt&&/\b(smaller|shrink|decrease|zoom out|reduce)\b/.test(c)&&WIDGETIDS.includes(tgt)){res.changes.push({op:'w_size',id:tgt,f:1/factor(c)});done=true}
     if(!done&&tgt&&WIDGETIDS.includes(tgt)&&/\b(move|put|place|shift|slide)\b/.test(c)&&(whereOf(c)||/cover|block|in the way|out of the way/.test(c))){res.changes.push({op:'w_move',id:tgt,where:whereOf(c)||'tr'});done=true}
     if(!done&&/\bmove|out of the way|doesnt cover|does not cover|covering|in the way/.test(c)&&(tgt||lastTarget)&&WIDGETIDS.includes(tgt||lastTarget)){res.changes.push({op:'w_move',id:tgt||lastTarget,where:whereOf(c)||'tr'});done=true}
-    if(!done&&/\b(hide|remove|take away|get rid of|turn off)\b/.test(c)&&tools.length){tools.forEach(id=>res.changes.push({op:'tb_hide',id}));done=true}
-    else if(!done&&/\b(put back|bring back|show|add|unhide|turn on|restore)\b/.test(c)&&tools.length&&!list){tools.forEach(id=>res.changes.push({op:'tb_show',id}));done=true}
+    if(!done&&/\b(hide|remove|take away|get rid of|turn off)\b|\b(turn|switch) .* off\b/.test(c)&&tools.length){tools.forEach(id=>res.changes.push({op:'tb_hide',id}));done=true}
+    else if(!done&&/\b(put back|bring back|show|add|unhide|turn on|restore)\b|\b(turn|switch) .* on\b/.test(c)&&tools.length&&!list){tools.forEach(id=>res.changes.push({op:'tb_show',id}));done=true}
     else if(!done&&/\b(first|to the front|at the start|left of)\b/.test(c)&&tools.length){res.changes.push({op:'tb_first',id:tools[0]});done=true}
     else if(!done&&/\b(last|at the end|to the end)\b/.test(c)&&tools.length){res.changes.push({op:'tb_last',id:tools[0]});done=true}
     if(!done&&!(handledList&&tools.length)){if(c.length>2&&!/^(please|ok|okay|and|also|hi|hey)$/.test(c))res.unsupported.push({text:c,why:'unclear'})}
@@ -102,6 +142,12 @@ function validate(ch){const out=[];for(const c of ch){
    case 'w_size':if(WIDGETIDS.includes(c.id))out.push({op:c.op,id:c.id,f:Math.min(2,Math.max(.5,+c.f||1))});break;
    case 'w_move':if(WIDGETIDS.includes(c.id))out.push(c);break;
    case 'clock_size':out.push({op:c.op,f:Math.min(2,Math.max(.4,+c.f||1))});break;
+   case 'ui_lang':case 'content_lang':if(['en','he','yi'].includes(c.lang))out.push(c);break;
+   case 'ui_theme':if(['light','dark','system'].includes(c.v))out.push(c);break;
+   case 'ui_accent':if(/^#[0-9a-f]{6}$/i.test(c.v))out.push(c);break;
+   case 'ui_size':if(['sm','std','lg'].includes(c.v))out.push(c);break;
+   case 'ui_labels':case 'clock_h12':case 'clock_ampm':out.push({op:c.op,on:!!c.on});break;
+   case 'clock_date':if(['heb','std','both','none'].includes(c.v))out.push(c);break;
    case 'clock_vis':out.push({op:c.op,on:!!c.on});break;
    case 'clock_pos':if(['tr','tl','br','bl'].includes(c.pos))out.push(c);break;
    case 'bg':{const o={op:'bg'};['dim','blur','brightness'].forEach(k=>{if(typeof c[k]==='number')o[k]=Math.min(k==='blur'?20:k==='dim'?.8:1.3,Math.max(0,c[k]))});out.push(o);break}
@@ -110,7 +156,7 @@ const snap=()=>{const wd={};for(const id in Widgets.open){const i=Widgets.open[i
 const history=[];
 function restore(sn){const c=JSON.parse(sn.cfg);for(const k of Object.keys(cfg))if(!(k in c))delete cfg[k];Object.assign(cfg,c);
   for(const id in sn.wd){const i=Widgets.open[id];if(!i)continue;Object.assign(i.w,sn.wd[id]);place(i)}
-  S.renderToolbar();S.renderClock();S.renderBg()}
+  if(window.__applyUi)window.__applyUi();S.renderToolbar();S.renderClock();S.renderBg()}
 function place(i){const w=i.w,el=i.el;if(w.x!=null)el.style.left=w.x+'px';if(w.y!=null)el.style.top=w.y+'px';if(w.w)el.style.width=w.w+'px';if(w.h)el.style.height=w.h+'px'}
 const tbH=()=>(cfg.toolbar.size||72)+40;
 function moveWidget(id,where){const i=Widgets.open[id];if(!i)return false;const el=i.el,W=innerWidth,H=innerHeight,w=el.offsetWidth,hh=el.offsetHeight,m=20;const top=(cfg.toolbar.pos==='top')?tbH():m,bot=H-hh-((cfg.toolbar.pos==='bottom')?tbH():m);
@@ -133,6 +179,13 @@ function applyOne(c,msgs){const t=cfg.toolbar;
      const el=i.el;const w=Math.round(Math.min(innerWidth-20,Math.max(180,el.offsetWidth*c.f))),hh=Math.round(Math.min(innerHeight-20,Math.max(90,el.offsetHeight*c.f)));i.w.w=w;i.w.h=hh;place(i);msgs.push((c.f>1?'Bigger ':'Smaller ')+S.TOOLS[c.id].toLowerCase());break}
    case 'w_move':{const i=Widgets.open[c.id];if(!i){msgs.push('The '+S.TOOLS[c.id].toLowerCase()+' is not open, so I did not move it.');break}moveWidget(c.id,c.where);msgs.push('Moved the '+S.TOOLS[c.id].toLowerCase());break}
    case 'clock_size':cfg.clock.size=Math.round(Math.min(14,Math.max(1.5,cfg.clock.size*c.f))*10)/10;msgs.push(c.f>1?'Bigger clock':'Smaller clock');break;
+   case 'ui_lang':case 'ui_theme':case 'ui_accent':case 'ui_size':case 'ui_labels':{const u=cfg.ui;const k={ui_lang:'lang',ui_theme:'theme',ui_accent:'accent',ui_size:'size'}[c.op];
+     if(c.op==='ui_labels')u.labels=c.on;else u[k]=c.lang||c.v;if(window.__applyUi)window.__applyUi();S.renderToolbar();
+     msgs.push(c.op==='ui_lang'?'Settings and toolbar language: '+({en:'English',he:'Hebrew',yi:'Yiddish'})[c.lang]:c.op==='ui_theme'?'Theme: '+c.v:c.op==='ui_accent'?'Button color changed':c.op==='ui_size'?'Interface size: '+({sm:'small',std:'standard',lg:'large'})[c.v]:c.on?'Tool labels shown':'Tool labels hidden');break}
+   case 'content_lang':if(window.__setContentLang){window.__setContentLang(c.lang);msgs.push('Classroom wording for students: '+({en:'English',he:'Hebrew',yi:'Yiddish'})[c.lang])}else msgs.push('Classroom wording could not be changed here.');break;
+   case 'clock_date':cfg.clock.date=c.v;msgs.push(c.v==='none'?'Date hidden':'Date shows '+({heb:'the Hebrew date',std:'the English date',both:'both dates'})[c.v]);break;
+   case 'clock_h12':cfg.clock.hour12=c.on;msgs.push(c.on?'12-hour time':'24-hour time');break;
+   case 'clock_ampm':cfg.clock.showAmPm=c.on;msgs.push(c.on?'AM/PM shown':'AM/PM hidden');break;
    case 'clock_vis':cfg.clock.visible=c.on;msgs.push(c.on?'Clock shown':'Clock hidden');break;
    case 'clock_pos':cfg.clock.pos=c.pos;msgs.push('Clock moved');break;
    case 'bg':['dim','blur','brightness'].forEach(k=>{if(c[k]!=null)cfg.bg[k]=c[k]});msgs.push('Background updated');break;

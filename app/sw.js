@@ -1,4 +1,4 @@
-const C='classroom-v156';
+const C='classroom-v157';
 const FILES=['./','index.html','style.css','app.js','manifest.webmanifest','icon.svg','drive-ui.js','behavior.js','prizes.js','cloud.js','remote.js','toolpick.js','backup.js','demo.js','widgets2.js','widgets3.js','widgets4.js','widgets5.js','inputdiag.js','settings2.js','welcome.js','customize.js','askboard.js','i18n.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(FILES)));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x.startsWith('classroom-')&&x!==C).map(x=>caches.delete(x)))));self.clients.claim()});

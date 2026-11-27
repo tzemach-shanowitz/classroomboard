@@ -159,6 +159,7 @@ function deleteAcct(C){
 /* ---- Drive folders for people who do not use the Smart Board folder ---- */
 function driveFolders(kind){const key='myFolders.'+kind;
   modal(kind==='library'?'Library':'Slideshows',(b,c)=>{const draw=()=>{b.innerHTML='';const L=Store.get(key,[]);const C=window.Cloud;
+    if(window.MyTools&&kind==='library'){const mt=MyTools.section(c);if(mt)b.append(mt)}
     const g=h('div',{class:'libgrid'});L.forEach((x,i)=>g.append(h('div',{class:'libcard'},h('div',{onclick:()=>{c();driveBrowser(x.id,kind,x.name)}},h('div',{class:'ic'},'📁'),h('div',{dir:'auto',style:'font-size:20px;margin-top:6px'},x.name)),h('div',{class:'row',style:'justify-content:center'},pill('✕',()=>{L.splice(i,1);Store.set(key,L);draw()})))));
     b.append(L.length?g:h('div',{class:'card'},'Add a Google Drive folder to show it here. In Drive, share the folder as "Anyone with the link can view", then paste its link below.'));
     const inp=h('input',{class:'inp',placeholder:'Paste a Google Drive folder link',style:'flex:1',dir:'ltr'});
